@@ -1,0 +1,24 @@
+nodeSelector:
+  workfor: mineru
+replicas: 1
+container:
+  port: 9506
+  resources:
+    requests:
+      cpu: 10
+      memory: 96Gi
+      nvidia.com/gpu: 1
+    limits:
+      cpu: 20
+      memory: 128Gi
+      nvidia.com/gpu: 1
+  env:
+    - name: PYTHONPATH
+      value: /app/packages/mcp_server/src/mcp_server:/app
+    - name: MODEL_PATH
+      value: /app/models/models--opendatalab--MinerU-HTML/snapshots/2498a57895e29ccf9c1d5dd60e5f68f18c1406c6
+    - name: VLLM_USE_V1
+      value: '1'
+
+service:
+  port: 80

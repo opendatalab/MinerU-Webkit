@@ -193,7 +193,6 @@ class BaseHTMLElementRecognizer(ABC):
 
         def __split_node(elem: HtmlElement):
             attrib = elem.attrib if copy_attri else {}
-            print(f"elem: {element_to_html(elem)}")
             copied = BaseHTMLElementRecognizer.HTML_PARSER.makeelement(elem.tag, attrib)
             if elem.text and elem.text.strip():
                 copied.text = elem.text
