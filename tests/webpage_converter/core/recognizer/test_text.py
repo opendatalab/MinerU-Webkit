@@ -1,6 +1,5 @@
 import unittest
 from pathlib import Path
-
 from webpage_converter.convert_chain import ExtractSimpleFactory
 from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer
 from webpage_converter.core.recognizer.text import TextParagraphRecognizer
