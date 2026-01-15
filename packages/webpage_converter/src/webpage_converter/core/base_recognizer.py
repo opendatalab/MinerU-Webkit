@@ -9,6 +9,7 @@ from ..utils.html_utils import (
     element_to_html_unescaped,
     html_to_element,
     replace_element,
+    clean_xml_text
 )
 from ..utils.logger import mylogger
 
@@ -195,7 +196,7 @@ class BaseHTMLElementRecognizer(ABC):
             attrib = elem.attrib if copy_attri else {}
             copied = BaseHTMLElementRecognizer.HTML_PARSER.makeelement(elem.tag, attrib)
             if elem.text and elem.text.strip():
-                copied.text = elem.text
+                copied.text = clean_xml_text(elem.text)
 
             if path:
                 path[-1].append(copied)

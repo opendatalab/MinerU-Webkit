@@ -127,31 +127,43 @@ class TestHTMLFileToDataJsonPreConverter(HTMLFileFormatFilterPreConverter):
         print(f"proj_root_dir:{proj_root_dir}")
         print(f"self.__html_parent_path:{self.__html_parent_path}")
         print(f"path:{data_json.get("path")}")
-        html_name = data_json.get("html_name")
-        if not html_name:
-            raise Exception("Missing html_name field")
-        main_html_name = data_json.get("main_html_name")
-        if not main_html_name:
-            raise Exception("Missing main_html_name field")
+        html = data_json.get("html")
+        main_html = data_json.get("main_html")
+        if not html and not main_html:
+            html_name = data_json.get("html_name")
+            main_html_name = data_json.get("main_html_name", html_name)
+            if not html_name and not main_html_name:
+                raise Exception("Missing main_html_name field")
+            else:
+                if html_name and not main_html_name:
+                    html_name = main_html_name
+                if main_html_name and not html_name:
+                    main_html_name = html_name
 
-        html_file_path = os.path.join(
-            proj_root_dir, self.__html_parent_path, html_name
-        )
-        main_html_file_path = os.path.join(
-            proj_root_dir, self.__html_parent_path, main_html_name if main_html_name else html_name
-        )
+                html_file_path = os.path.join(
+                    proj_root_dir, self.__html_parent_path, html_name
+                )
+                main_html_file_path = os.path.join(
+                    proj_root_dir, self.__html_parent_path, main_html_name if main_html_name else html_name
+                )
+                with open(html_file_path, "r", encoding="utf-8") as f:
+                    html = f.read()
+                    if "html_name" in data_json:
+                        del data_json["html_name"]
 
-        with open(html_file_path, "r", encoding="utf-8") as f:
-            html = f.read()
-            data_json["html"] = html
-            if "html_name" in data_json:
-                del data_json["html_name"]
+                with open(main_html_file_path, "r", encoding="utf-8") as f:
+                    main_html = f.read()
+                    if "main_html_name" in data_json:
+                        del data_json["main_html_name"]
+        else:
+            if html and not main_html:
+                main_html = html
+            if main_html and not html:
+                html = main_html
 
-        with open(main_html_file_path, "r", encoding="utf-8") as f:
-            main_html = f.read()
-            data_json["main_html"] = main_html
-            if "main_html_name" in data_json:
-                del data_json["main_html_name"]
+        data_json["html"] = html
+        data_json["main_html"] = main_html
+
         return data_json
 
 

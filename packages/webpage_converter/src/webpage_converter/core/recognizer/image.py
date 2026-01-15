@@ -303,6 +303,22 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
                 pass
         # 原有的 src 处理逻辑
         src = elem_attributes.get("src", "")
+        data_src = ""
+        for k, v in elem_attributes.items():
+            v_lower = v.lower()
+            if any(img_label for img_label in self.IMG_LABEL if img_label in v_lower):
+                data_src = v
+                break
+            if v_lower.startswith("data:") or v_lower.startswith("http"):
+                data_src = v
+                break
+        if src:
+            src_lower = src.lower()
+            if any(img_label for img_label in self.IMG_LABEL if img_label in src_lower) or src_lower.startswith("http") or src_lower.startswith("data:"):
+                pass
+            else:
+                src = data_src
+
         return src
 
     def __parse_svg_img_attr(self, elem: HtmlElement, attributes: dict):

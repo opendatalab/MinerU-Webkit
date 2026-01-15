@@ -286,27 +286,6 @@ def remove_element(element: HtmlElement):
             previous.tail = (previous.tail or "") + element.tail
     parent.remove(element)
 
-
-def extract_magic_html(html, base_url, page_layout_type):
-    """提取magic html.
-
-    Args:
-        html: str: html字符串
-        base_url: str: 基础url
-        page_layout_type: str: 页面布局类型
-    """
-    from llm_web_kit.extractor.html.main_html_parser import MagicHTMLMainHtmlParser
-
-    extractor = MagicHTMLMainHtmlParser({})
-    try:
-        main_html, _, _ = extractor._extract_main_html(html, base_url, page_layout_type)
-        return main_html
-    except Exception as e:
-        from llm_web_kit.exception.exception import MagicHtmlExtractorException
-
-        raise MagicHtmlExtractorException(f"extract_magic_html error: {e}")
-
-
 def combine_text(text1: str, text2: str, lang="en") -> str:
     """将两段文本合并，中间加空格.
 
@@ -615,3 +594,14 @@ def optimized_dollar_matching(text):
         return "".join(text_chars)
     else:
         return text
+
+
+def clean_xml_text(text):
+    """
+    移除 XML 不允许的控制字符。
+    保留合法的空白字符：\\t (制表符), \\n (换行符), \\r (回车符)。
+    """
+    if text is None:
+        return None
+    # 使用正则表达式移除除 \\t, \\n, \\r 外的控制字符 (Unicode 码点范围 0x00-0x1F, 以及 0x7F)
+    return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)

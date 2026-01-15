@@ -303,7 +303,8 @@ class TableRecognizer(BaseHTMLElementRecognizer):
                     if node.tail and node.tail.strip():
                         result.append(node.tail.strip())
                 else:
-                    if node.tag == "br" or node.tag not in new_inline_tags:
+                    pre_element = node.getprevious()
+                    if node.tag == "br" or node.tag not in new_inline_tags or (pre_element is not None and pre_element.tag not in new_inline_tags):
                         result.append("\n\n")
 
                     # 提取当前节点的文本
@@ -389,7 +390,10 @@ class TableRecognizer(BaseHTMLElementRecognizer):
             content = table_root.text_content()
             return content
         table_html = html.tostring(table_root, encoding="utf-8").decode()
+
         replace_tree_html = replace_sub_sup_with_text_regex(table_html)
+        # print("\n\n")
+        # print(f"replace_tree_html: {replace_tree_html}")
         table_root = html_to_element(replace_tree_html)
 
         # 清理除了colspan和rowspan之外的属性

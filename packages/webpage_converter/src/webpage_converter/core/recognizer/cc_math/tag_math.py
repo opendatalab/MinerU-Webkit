@@ -29,7 +29,7 @@ def modify_tree(
         if len(annotation_tags) > 0:
             annotation_tag = annotation_tags[0]
             text = annotation_tag.text
-            if parent:
+            if parent is not None:
                 style_value = parent.get("style")
                 if style_value:
                     normalized_style_value = (

@@ -67,7 +67,7 @@ def _convert_html(
         "track_id": str(uuid.uuid4()),
         "url": url,
         "html": html_content,
-        "dataset_name": f"llm-web-kit-{pipe_tpl}",
+        "dataset_name": f"webkit-{pipe_tpl}",
         "data_source_category": "HTML",
         "file_bytes": len(html_content),
         "language": language,
@@ -78,10 +78,10 @@ def _convert_html(
     return extractor.extract(d)
 
 
-def convert_html_to_md(
+def convert_html_to_structured_data(
     main_html: str,
     url: str = "http://www.example.com",
-    output_format: str = "md",
+    output_format: str = "mm_md",
     language: str = "en",
     use_raw_image_url: bool = True,
 ) -> str:
@@ -90,7 +90,7 @@ def convert_html_to_md(
     Args:
         url: 网页URL
         main_html: 已经抽取的主要HTML内容
-        output_format: 输出格式，'md' 或 'mm_md' 或 'plain_md'
+        output_format: 输出格式，'md' 或 'mm_md' 或 'plain_md' 或 'json' 或 'txt'
         language: 语言，可选：'en' 或 'zh'
         use_raw_image_url: 是否使用原始图片URL（仅对mm_md格式有效）
 
@@ -107,8 +107,12 @@ def convert_html_to_md(
     elif output_format == "plain_md":
         result = content_list.to_plain_md()
     elif output_format == "json":
-        result = result.to_json()
+        result = content_list.to_json()
+    elif output_format == "txt":
+        result = content_list.to_txt()
     else:
         raise InvalidOutputFormatException(f"Invalid output format: {output_format}")
 
     return result
+
+

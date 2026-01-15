@@ -1,0 +1,226 @@
+Single-Precision Conversion Best Practices
+
+跳到内容
+
+![MathWorks - Mobile View](6f2ec84d60ec7db01eb0b0cef605f15473eadf7636facb41f467aa882ee6c833)
+
+- 登录
+- 
+  - 我的帐户
+  - 我的社区资料
+  - 关联许可证
+  - 登出
+- 产品
+- 解决方案
+- 学术
+- 支持
+- 社区
+- 活动
+- 获取 MATLAB MATLAB
+
+- 产品
+- 解决方案
+- 学术
+- 支持
+- 社区
+- 活动
+
+- 获取 MATLAB MATLAB
+- 登录
+- 
+  - 我的帐户
+  - 我的社区资料
+  - 关联许可证
+  - 登出
+
+帮助中心
+
+目录
+
+- 文档主页
+
+- 代码生成
+- FPGA、ASIC 和 SoC 开发
+
+- Fixed-Point Designer
+- Automated Data Type Conversion
+- Single-Precision Design for MATLAB Code
+
+- Single-Precision Conversion Best Practices
+- On this page
+- Use Integers for Index Variables
+- Limit Use of assert Statements
+- Initialize MATLAB Class Properties in Constructor
+- Provide a Test File That Calls Your MATLAB Function
+- Prepare Your Code for Code Generation
+- Use the -args Option to Specify Input Properties
+- Test Numerics and Log I/O Data
+
+- 文档
+- 示例
+- 函数
+- 模块
+- App
+- 视频
+- 问答
+
+- 文档
+- 示例
+- 函数
+- 模块
+- App
+- 视频
+- 问答
+
+- 文档
+- 示例
+- 函数
+- 模块
+- App
+- 视频
+- 问答
+
+- 文档
+- 示例
+- 函数
+- 模块
+- App
+- 视频
+- 问答
+
+- 试用软件
+- 产品更新
+
+主要内容
+
+## Single-Precision Conversion Best Practices
+
+### Use Integers for Index Variables
+
+In MATLAB<sup>®</sup> code that you want to convert to single precision, it is a best practice to use integers for index variables. However, if the code does not use integers for index variables, when possible `convertToSingle` tries to detect the index variables and select `int32` types for them.
+
+### Limit Use of `assert` Statements
+
+- Do not use `assert` statements to define the properties of input arguments.
+- Do not use `assert` statements to test the type of a variable. For example, do not use
+
+```
+assert(isa(a, 'double'))
+```
+
+### Initialize MATLAB Class Properties in Constructor
+
+Do not initialize MATLAB class properties in the `properties` block. Instead, use the constructor to initialize the class properties.
+
+### Provide a Test File That Calls Your MATLAB Function
+
+Separate your core algorithm from other code that you use to test and verify the results. Create a test file that calls your double-precision MATLAB algorithm. You can use the test file to:
+
+- Automatically define properties of the top-level function inputs.
+- Verify that the double-precision algorithm behaves as you expect. The double-precision behavior is the baseline against which you compare the behavior of the single-precision versions of your algorithm.
+- Compare the behavior of the single-precision version of your algorithm to the double-precision baseline.
+
+For best results, the test file must exercise the algorithm over its full operating range.
+
+### Prepare Your Code for Code Generation
+
+MATLAB code that you want to convert to single precision must comply with code generation requirements. See MATLAB Language Features Supported for C/C++ Code Generation.
+
+To help you identify unsupported functions or constructs in your MATLAB code, add the `%#codegen` pragma to the top of your MATLAB file. When you edit your code in the MATLAB editor, the MATLAB Code Analyzer flags functions and constructs that are not supported for code generation. See Check Code Using the MATLAB Code Analyzer. When you use the MATLAB Coder™ app, the app screens your code for code generation readiness. At the function line, you can use the Code Generation Readiness Tool. See Check Code Using the Code Generation Readiness Tool.
+
+### Use the `-args` Option to Specify Input Properties
+
+When you generate single-precision MATLAB code, if you specify a test file, you do not have to specify argument properties with the `-args` option. In this case, the code generator runs the test file to determine the properties of the input types. However, running the test file can slow the code generation. It is a best practice to pass the properties to the `-args` option so that `convertToSingle` does not run the test file to determine the argument properties. If you have a MATLAB Coder license, you can use `coder.getArgTypes` to determine the argument properties. For example:
+
+```
+types = coder.getArgTypes('myfun_test', 'myfun');
+scfg = coder.config('single');
+convertToSingle -config scfg -args types myfun
+```
+
+### Test Numerics and Log I/O Data
+
+When you use the convertToSingle function to generate single-precision MATLAB code, enable numerics testing and I/O data logging for comparison plots. To use numerics testing, you must provide a test file that calls your MATLAB function. To enable numerics testing and I/O data logging, create a `coder.SingleConfig` object. Set the `TestBenchName` , `TestNumerics` , and `LogIOForComparisonPlotting` properties. For example:
+
+```
+scfg = coder.config('single');
+scfg.TestBenchName = 'mytest';
+scfg.TestNumerics = true;
+scfg.LogIOForComparisonPlotting = true;
+```
+
+## MATLAB Command
+
+You clicked a link that corresponds to this MATLAB command:
+
+Run the command by entering it in the MATLAB Command Window. Web browsers do not support MATLAB commands.
+
+![MathWorks - Domain Selector](6f2ec84d60ec7db01eb0b0cef605f15473eadf7636facb41f467aa882ee6c833)
+
+选择网站
+
+选择网站以获取翻译的可用内容，以及查看当地活动和优惠。根据您的位置，我们建议您选择：。
+
+您也可以从以下列表中选择网站：
+
+美洲
+
+- América Latina (Español)
+- Canada (English)
+- United States (English)
+
+欧洲
+
+- Belgium (English)
+- Denmark (English)
+- Deutschland (Deutsch)
+- España (Español)
+- Finland (English)
+- France (Français)
+- Ireland (English)
+- Italia (Italiano)
+- Luxembourg (English)
+
+- Netherlands (English)
+- Norway (English)
+- Österreich (Deutsch)
+- Portugal (English)
+- Sweden (English)
+- Switzerland
+  - Deutsch
+  - English
+  - Français
+- United Kingdom (English)
+
+亚太
+
+- Australia (English)
+- India (English)
+- New Zealand (English)
+- 中国
+  - 简体中文 Chinese
+  - English
+- 日本 Japanese (日本語)
+- 한국 Korean (한국어)
+
+联系您当地的办事处
+
+- 试用软件
+- 产品更新
+
+- 选择网站 United States
+
+- 信任中心
+- 商标
+- 隐私政策
+- 防盗版
+- 应用程序状态
+- 联系我们
+
+![](c0ac983e240aa88ab7f50d1642f6bb82b905fa1fb237e449859515fb16995f6c)
+
+京公网安备 11010502045942号 京ICP备12052471号
+
+© 1994-2024 The MathWorks, Inc.
+
+- WeChat
