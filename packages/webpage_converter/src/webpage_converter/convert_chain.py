@@ -1,6 +1,10 @@
 import traceback
-from typing import List, Union
+
 import commentjson as json
+
+from .abstracts.converter_abstract import AbstractConverter
+from .abstracts.post_abstract import AbstractPostConverter
+from .abstracts.pre_abstract import AbstractPreConverter
 from .exception.exception import (
     ExtractorChainBaseException,
     ExtractorChainConfigException,
@@ -9,9 +13,6 @@ from .exception.exception import (
     ExtractorNotFoundException,
     LlmWebKitBaseException,
 )
-from .abstracts.pre_abstract import AbstractPreConverter
-from .abstracts.converter_abstract import AbstractConverter
-from .abstracts.post_abstract import AbstractPostConverter
 from .schemas.datajson import DataJson
 from .utils.class_loader import load_python_class_by_name
 
@@ -29,9 +30,9 @@ class ExtractorChain:
         Args:
             config (dict): Config dict containing extractor_pipe configuration
         """
-        self.__pre_extractors: List[AbstractPreConverter] = []
-        self.__extractors: List[AbstractConverter] = []
-        self.__post_extractors: List[AbstractPostConverter] = []
+        self.__pre_extractors: list[AbstractPreConverter] = []
+        self.__extractors: list[AbstractConverter] = []
+        self.__post_extractors: list[AbstractPostConverter] = []
 
         # Get extractor pipe config
         extractor_config = config.get("extractor_pipe", {})
@@ -105,27 +106,19 @@ class ExtractorChain:
                 post_extractor = self.__create_extractor(post_config)
                 self.__post_extractors.append(post_extractor)
 
-    def __create_extractor(
-        self, config: dict
-    ) -> Union[AbstractPreConverter, AbstractConverter, AbstractPostConverter]:
+    def __create_extractor(self, config: dict) -> AbstractPreConverter | AbstractConverter | AbstractPostConverter:
         """Create extractor instance from config."""
         python_class = config.get("python_class")
         if not python_class:
-            raise ExtractorChainConfigException(
-                "python_class not specified in extractor config"
-            )
+            raise ExtractorChainConfigException("python_class not specified in extractor config")
 
         try:
             kwargs = config.get("class_init_kwargs", {})
             return load_python_class_by_name(python_class, config, kwargs)
         except ImportError:
-            raise ExtractorNotFoundException(
-                f"Extractor class not found: {python_class}"
-            )
+            raise ExtractorNotFoundException(f"Extractor class not found: {python_class}")
         except Exception as e:
-            raise ExtractorInitException(
-                f"Failed to initialize extractor {python_class}: {str(e)}"
-            )
+            raise ExtractorInitException(f"Failed to initialize extractor {python_class}: {str(e)}")
 
     def __validate_extract_input(self, data_json: DataJson):
         """校验一下配置里必须满足的条件，否则抛出异常.
@@ -138,16 +131,14 @@ class ExtractorChain:
     def __validate_input_data_format(self, data_json):
         """校验一下输入的data_json对象是否是DataJson对象，否则抛出异常."""
         if not isinstance(data_json, DataJson):
-            raise ExtractorChainInputException(
-                f"input data is not DataJson object, data type is {type(data_json)}"
-            )
+            raise ExtractorChainInputException(f"input data is not DataJson object, data type is {type(data_json)}")
 
 
 class ExtractSimpleFactory:
     """Factory to create ExtractorChain instances."""
 
     @staticmethod
-    def create(config: Union[str, dict]) -> ExtractorChain:
+    def create(config: str | dict) -> ExtractorChain:
         """Create ExtractorChain from config.
 
         Args:

@@ -1,6 +1,7 @@
 import json
 import unittest
 from pathlib import Path
+
 from webpage_converter.core.recognizer.text import TextParagraphRecognizer
 from webpage_converter.utils.html_utils import html_to_element
 
@@ -12,16 +13,16 @@ class TestTextParagraphRecognizer(unittest.TestCase):
 
     def setUp(self):
         self.recognizer = TextParagraphRecognizer()
-        self.test_data_dir = core_path / 'assets/html'
+        self.test_data_dir = core_path / "assets/html"
 
     def test_recognize_simple_para(self):
         """测试识别简单段落."""
         # 准备测试数据
-        with open(self.test_data_dir.joinpath('simple_para.html'), 'r', encoding='utf-8') as f:
+        with open(self.test_data_dir.joinpath("simple_para.html"), encoding="utf-8") as f:
             html = f.read()
 
         # 执行识别
-        result = self.recognizer.recognize('', [(html_to_element(html), html_to_element(html))], html)
+        result = self.recognizer.recognize("", [(html_to_element(html), html_to_element(html))], html)
 
         # 验证结果
         self.assertEqual(len(result), 4)  # 应该识别出4个段落
@@ -30,30 +31,30 @@ class TestTextParagraphRecognizer(unittest.TestCase):
         first_para = result[0][0]
         ccel = first_para
         jso = json.loads(ccel.text)
-        self.assertEqual(jso[0]['c'], '质量方程')
-        self.assertEqual(jso[0]['t'], 'text')
+        self.assertEqual(jso[0]["c"], "质量方程")
+        self.assertEqual(jso[0]["t"], "text")
 
         # 验证第二个段落
         second_para = result[1][0]
         text = second_para.text
         jso = json.loads(text)
-        self.assertEqual(jso[0]['c'], '爱因斯坦的方程')
-        self.assertEqual(jso[0]['t'], 'text')
-        self.assertEqual(jso[1]['c'], 'E=MC^2')
-        self.assertEqual(jso[1]['t'], 'equation-inline')
+        self.assertEqual(jso[0]["c"], "爱因斯坦的方程")
+        self.assertEqual(jso[0]["t"], "text")
+        self.assertEqual(jso[1]["c"], "E=MC^2")
+        self.assertEqual(jso[1]["t"], "equation-inline")
 
         # 验证第三个段落
         second_para = result[2][0]
         text = second_para.text
         jso = json.loads(text)
-        self.assertEqual(jso[0]['c'], '其中E是能量。')
-        self.assertEqual(jso[0]['t'], 'text')
+        self.assertEqual(jso[0]["c"], "其中E是能量。")
+        self.assertEqual(jso[0]["t"], "text")
 
         # 验证第四个段落
         second_para = result[3][0]
         text = second_para.text
         jso = json.loads(text)
-        self.assertTrue(jso[0]['c'].endswith('请访问'))
-        self.assertEqual(jso[1]['c'], 'https://abc.com')
-        self.assertEqual(jso[1]['t'], 'code-inline')
-        self.assertEqual(jso[2]['c'], '.')
+        self.assertTrue(jso[0]["c"].endswith("请访问"))
+        self.assertEqual(jso[1]["c"], "https://abc.com")
+        self.assertEqual(jso[1]["t"], "code-inline")
+        self.assertEqual(jso[2]["c"], ".")

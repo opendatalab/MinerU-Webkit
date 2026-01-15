@@ -1,5 +1,6 @@
 import regex
 from lxml.html import HtmlElement
+
 from .common import replace_node_by_cccode
 
 _RULES_MAP = {
@@ -55,9 +56,7 @@ def modify_tree(domain: str, root: HtmlElement):
                     content_nodes = root.xpath(rule["content-xpath"])
                     remove_non_content_text(root, content_nodes)
 
-                replace_node_by_cccode(
-                    code_node, "preset_rules", rule.get("pre-formatted", False)
-                )
+                replace_node_by_cccode(code_node, "preset_rules", rule.get("pre-formatted", False))
 
         if "inline-code" in domain_rule:
             rule = domain_rule["inline-code"]

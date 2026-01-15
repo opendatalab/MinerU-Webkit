@@ -1,11 +1,14 @@
 import re
-from typing import Any, Dict, List
+from typing import Any
+
 from pylatexenc import latexwalker
+
+from webpage_converter.core.base_recognizer import CCTag
+from webpage_converter.utils.html_utils import HtmlElement, SimpleMatch, build_cc_element, html_to_element
+from webpage_converter.utils.text_utils import normalize_ctl_text
+
 from ..common import CCMATH, MathType
 from .render import BaseMathRender, MathRenderType
-from webpage_converter.core.base_recognizer import CCTag
-from webpage_converter.utils.html_utils import HtmlElement, SimpleMatch, html_to_element, build_cc_element
-from webpage_converter.utils.text_utils import normalize_ctl_text
 
 # 添加MATHJAX_OPTIONS变量定义
 MATHJAX_OPTIONS = {
@@ -75,7 +78,7 @@ class MathJaxRender(BaseMathRender):
         """获取渲染器类型."""
         return self.render_type
 
-    def get_options(self, html: str) -> Dict[str, Any]:
+    def get_options(self, html: str) -> dict[str, Any]:
         """从HTML中提取MathJax选项.
 
         Args:
@@ -147,9 +150,7 @@ class MathJaxRender(BaseMathRender):
         extensions_match = re.search(extensions_pattern, config_text, re.DOTALL)
         if extensions_match:
             extensions_str = extensions_match.group(1)
-            self.options["extensions"] = [
-                ext.strip("'\"") for ext in re.findall(r'[\'"].*?[\'"]', extensions_str)
-            ]
+            self.options["extensions"] = [ext.strip("'\"") for ext in re.findall(r'[\'"].*?[\'"]', extensions_str)]
 
     def _parse_mathjax_version(self, src: str) -> None:
         """解析MathJax版本.
@@ -163,7 +164,7 @@ class MathJaxRender(BaseMathRender):
         elif "latest.js" in src:
             self.options["version"] = "latest"
 
-    def _parse_delimiters(self, delimiters_str: str) -> List[List[str]]:
+    def _parse_delimiters(self, delimiters_str: str) -> list[list[str]]:
         """解析分隔符字符串.
 
         Args:
@@ -183,9 +184,7 @@ class MathJaxRender(BaseMathRender):
             delimiters.append([start, end])
         return delimiters
 
-    def _is_list_contained(
-        self, list1: List[List[str]], list2: List[List[str]]
-    ) -> bool:
+    def _is_list_contained(self, list1: list[list[str]], list2: list[list[str]]) -> bool:
         """判断list1中的元素是否都被list2包含.
 
         Args:
@@ -211,23 +210,16 @@ class MathJaxRender(BaseMathRender):
     def is_customized_options(self) -> bool:
         """是否与默认配置不同."""
         # 如果options中inlineMath和displayMath为空，则认为没有自定义配置
-        if (
-            self.options.get("inlineMath") == []
-            and self.options.get("displayMath") == []
-        ):
+        if self.options.get("inlineMath") == [] and self.options.get("displayMath") == []:
             return False
 
         # 检查inlineMath是否被默认配置包含
-        if not self._is_list_contained(
-            self.options.get("inlineMath", []), MATHJAX_OPTIONS["inlineMath"]
-        ):
+        if not self._is_list_contained(self.options.get("inlineMath", []), MATHJAX_OPTIONS["inlineMath"]):
             self.render_type = MathRenderType.MATHJAX_CUSTOMIZED
             return True
 
         # 检查displayMath是否被默认配置包含
-        if not self._is_list_contained(
-            self.options.get("displayMath", []), MATHJAX_OPTIONS["displayMath"]
-        ):
+        if not self._is_list_contained(self.options.get("displayMath", []), MATHJAX_OPTIONS["displayMath"]):
             self.render_type = MathRenderType.MATHJAX_CUSTOMIZED
             return True
 
@@ -243,9 +235,7 @@ class MathJaxRender(BaseMathRender):
         inline_delimiters = self.options.get("inlineMath", [])
         if not inline_delimiters:
             # 使用默认分隔符
-            inline_delimiters = MATHJAX_OPTIONS.get(
-                "inlineMath", [["$", "$"], ["\\(", "\\)"]]
-            )
+            inline_delimiters = MATHJAX_OPTIONS.get("inlineMath", [["$", "$"], ["\\(", "\\)"]])
 
         # 如果processascii为True，添加反引号分隔符
         inline_delimiters = self._add_backtick_delimiter(inline_delimiters)
@@ -253,9 +243,7 @@ class MathJaxRender(BaseMathRender):
         display_delimiters = self.options.get("displayMath", [])
         if not display_delimiters:
             # 使用默认分隔符
-            display_delimiters = MATHJAX_OPTIONS.get(
-                "displayMath", [["$$", "$$"], ["\\[", "\\]"]]
-            )
+            display_delimiters = MATHJAX_OPTIONS.get("displayMath", [["$$", "$$"], ["\\[", "\\]"]])
 
         # 预编译正则表达式模式以提高性能
         inline_patterns = []
@@ -304,14 +292,10 @@ class MathJaxRender(BaseMathRender):
         # 先处理tail，再处理text，text的判断会多一些
         if element.tail:
             # 处理行间公式（优先处理，因为可能包含行内公式）
-            element.tail = self._process_math_in_text(
-                element, element.tail, display_pattern, True, True
-            )
+            element.tail = self._process_math_in_text(element, element.tail, display_pattern, True, True)
             # 处理行内公式
             if element.tail:  # 检查是否还有文本需要处理
-                element.tail = self._process_math_in_text(
-                    element, element.tail, inline_pattern, False, True
-                )
+                element.tail = self._process_math_in_text(element, element.tail, inline_pattern, False, True)
 
         # 跳过特定标签
         skip_tags = MATHJAX_OPTIONS["skipTags"]
@@ -331,14 +315,10 @@ class MathJaxRender(BaseMathRender):
         # 处理当前节点的文本
         if element.text:
             # 处理行间公式（优先处理，因为可能包含行内公式）
-            element.text = self._process_math_in_text(
-                element, element.text, display_pattern, True
-            )
+            element.text = self._process_math_in_text(element, element.text, display_pattern, True)
             # 处理行内公式
             if element.text:  # 检查是否还有文本需要处理
-                element.text = self._process_math_in_text(
-                    element, element.text, inline_pattern, False
-                )
+                element.text = self._process_math_in_text(element, element.text, inline_pattern, False)
 
         # 获取子节点的副本，以避免在迭代过程中修改列表
         children = list(element)
@@ -363,11 +343,7 @@ class MathJaxRender(BaseMathRender):
 
         # 检查是否有处理类
         process_class = MATHJAX_OPTIONS.get("processClass", "tex2jax_process")
-        if (
-            process_class
-            and element.get("class")
-            and process_class in element.get("class")
-        ):
+        if process_class and element.get("class") and process_class in element.get("class"):
             return False
 
         # 检查父元素是否应该被忽略
@@ -419,18 +395,12 @@ class MathJaxRender(BaseMathRender):
                         fake_match = SimpleMatch(text, node.pos, node.len)
                         matches.append(fake_match)
                 # 其他数学环境
-                if (
-                    node.isNodeType(latexwalker.LatexEnvironmentNode)
-                    and hasattr(node, "environmentname")
-                    and node.environmentname in independent_math_environments
-                ):
+                if node.isNodeType(latexwalker.LatexEnvironmentNode) and hasattr(node, "environmentname") and node.environmentname in independent_math_environments:
                     tem_match_display.append(node.latex_verbatim())
                     fake_match = SimpleMatch(text, node.pos, node.len)
                     matches.append(fake_match)
             # 公式自定义边界逻辑
-            new_display_patterns = [
-                item for item in pattern.pattern.split("|") if "$" not in item
-            ]
+            new_display_patterns = [item for item in pattern.pattern.split("|") if "$" not in item]
             custom_pattern = re.compile("|".join(new_display_patterns), re.DOTALL)
             custom_matches = list(custom_pattern.finditer(text))
             for item in custom_matches:
@@ -536,9 +506,7 @@ class MathJaxRender(BaseMathRender):
         # 奇数个反斜杠表示转义
         return count % 2 == 1
 
-    def _add_backtick_delimiter(
-        self, inline_delimiters: List[List[str]]
-    ) -> List[List[str]]:
+    def _add_backtick_delimiter(self, inline_delimiters: list[list[str]]) -> list[list[str]]:
         """如果启用了processascii，添加反引号分隔符.
 
         Args:
@@ -562,11 +530,7 @@ class MathJaxRender(BaseMathRender):
         Returns:
             bool: 如果是ASCII公式则返回True
         """
-        return (
-            self.options.get("processascii", False)
-            and match_text.startswith("`")
-            and match_text.endswith("`")
-        )
+        return self.options.get("processascii", False) and match_text.startswith("`") and match_text.endswith("`")
 
     def _extract_ascii_math_content(self, match_text: str) -> str:
         """提取ASCII数学公式内容并转换.
@@ -630,7 +594,7 @@ class MathJaxRenderMock(MathJaxRender):
         # 使用默认的MathJax选项
         self.options = MATHJAX_OPTIONS.copy()
 
-    def get_options(self, html: str) -> Dict[str, Any]:
+    def get_options(self, html: str) -> dict[str, Any]:
         """虚拟渲染器直接返回默认选项，不解析HTML配置.
 
         Args:

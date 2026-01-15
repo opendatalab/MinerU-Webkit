@@ -1,27 +1,27 @@
+import asyncio
 import os
 import re
-import traceback
 import time
-import asyncio
+import traceback
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 from html import unescape
 from pathlib import Path
-from typing import Dict, List, Any
-from dataclasses import dataclass
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from utils.oss_v2 import oss_downloader, oss_uploader
-from configs import dripper_client
-from configs import batch_config
-from webpage_converter.convert import PipeTpl, _convert_html
+from typing import Any
+
+from configs import batch_config, dripper_client
 from loguru import logger
+from utils.oss_v2 import oss_downloader, oss_uploader
+from webpage_converter.convert import PipeTpl, _convert_html
 
 
 @dataclass
 class BatchRequest:
-    """批处理请求对象"""
+    """批处理请求对象."""
 
     request_id: str
-    file_url_list: List[Dict]
+    file_url_list: list[dict]
     compress: bool
     local_dir: str
     future: asyncio.Future  # 用于异步返回专属结果
@@ -29,7 +29,7 @@ class BatchRequest:
 
 
 class HighPerformanceBatchProcessor:
-    """高性能异步批处理器"""
+    """高性能异步批处理器."""
 
     def __init__(
         self,
@@ -50,14 +50,12 @@ class HighPerformanceBatchProcessor:
         self._stop_event = asyncio.Event()
 
     async def start(self):
-        """在事件循环运行后手动启动处理器"""
+        """在事件循环运行后手动启动处理器."""
         if not self._initialized:
             self._processor_task = asyncio.create_task(self._batch_processor_worker())
             self._initialized = True
 
-    async def add_request(
-        self, request_id: str, file_url_list: List[Dict], compress: bool, local_dir: str
-    ) -> Any:
+    async def add_request(self, request_id: str, file_url_list: list[dict], compress: bool, local_dir: str) -> Any:
         """
         添加请求到批处理器 - 完全异步非阻塞
 
@@ -86,7 +84,7 @@ class HighPerformanceBatchProcessor:
                     # 在等待时也检查停止事件
                     try:
                         await asyncio.wait_for(self._stop_event.wait(), timeout=0.01)
-                    except asyncio.TimeoutError:
+                    except TimeoutError:
                         pass
                     continue
 
@@ -109,19 +107,13 @@ class HighPerformanceBatchProcessor:
 
         logger.info("批处理工作器已停止。")
 
-    async def _collect_batch(self) -> List[BatchRequest]:
-        """
-        智能收集一批请求
-        """
+    async def _collect_batch(self) -> list[BatchRequest]:
+        """智能收集一批请求."""
         batch_requests = []
         start_time = time.time()
         timeout_occurred = False
 
-        while (
-            len(batch_requests) < self.batch_size
-            and not timeout_occurred
-            and not self._stop_event.is_set()
-        ):
+        while len(batch_requests) < self.batch_size and not timeout_occurred and not self._stop_event.is_set():
             elapsed = time.time() - start_time
             if elapsed >= self.batch_timeout:
                 # logger.info(f"总时间窗口 {self.batch_timeout} 秒已到，停止收集。")
@@ -156,9 +148,7 @@ class HighPerformanceBatchProcessor:
                     try:
                         task = get_task_future.result()
                         batch_requests.append(task)
-                        logger.info(
-                            f"收到任务 {task.request_id}, 当前批次大小: {len(batch_requests)}"
-                        )
+                        logger.info(f"收到任务 {task.request_id}, 当前批次大小: {len(batch_requests)}")
 
                         if len(batch_requests) >= self.batch_size:
                             logger.info(f"达到批量大小 {self.batch_size}，立即处理")
@@ -172,9 +162,7 @@ class HighPerformanceBatchProcessor:
                     break
 
                 elif timeout_future in done:
-                    logger.info(
-                        f"等待超时，停止收集。已收集 {len(batch_requests)} 个任务"
-                    )
+                    logger.info(f"等待超时，停止收集。已收集 {len(batch_requests)} 个任务")
                     timeout_occurred = True
 
             except asyncio.CancelledError:
@@ -188,8 +176,8 @@ class HighPerformanceBatchProcessor:
             logger.info(f"批次收集完成，共 {len(batch_requests)} 个任务")
         return batch_requests
 
-    async def _process_batch(self, batch_requests: List[BatchRequest]):
-        """处理批次并确保每个请求获得专属结果"""
+    async def _process_batch(self, batch_requests: list[BatchRequest]):
+        """处理批次并确保每个请求获得专属结果."""
         try:
             # 合并所有请求的文件进行批量处理
             all_files, request_mapping = self._merge_requests(batch_requests)
@@ -198,9 +186,7 @@ class HighPerformanceBatchProcessor:
                 return
 
             # 执行批量处理流程
-            batch_results = await self._execute_batch_processing(
-                all_files, batch_requests[0].local_dir
-            )
+            batch_results = await self._execute_batch_processing(all_files, batch_requests[0].local_dir)
 
             # 关键步骤：将批量结果精确分发给每个请求
             self._distribute_results(batch_requests, batch_results, request_mapping)
@@ -209,8 +195,8 @@ class HighPerformanceBatchProcessor:
             logger.error(f"批次处理失败: {e}")
             self._handle_batch_failure(batch_requests, e)
 
-    def _merge_requests(self, batch_requests: List[BatchRequest]):
-        """合并请求并建立映射关系"""
+    def _merge_requests(self, batch_requests: list[BatchRequest]):
+        """合并请求并建立映射关系."""
         all_files = []
         request_mapping = {}  # 文件到请求的映射
 
@@ -229,9 +215,7 @@ class HighPerformanceBatchProcessor:
 
         return all_files, request_mapping
 
-    async def _execute_batch_processing(
-        self, file_url_list: List[Dict], local_dir: str
-    ) -> Dict:
+    async def _execute_batch_processing(self, file_url_list: list[dict], local_dir: str) -> dict:
         """
         执行批量处理 - 包装您现有的处理逻辑
         保持您现有的下载、推理、转换、上传流程不变
@@ -246,10 +230,7 @@ class HighPerformanceBatchProcessor:
             # 批量下载文件
             download_results = oss_downloader.batch_download(tasks, local_dir)
             # 提取成功数据，并根据 file_id 匹配并赋值 html
-            id_to_html = {
-                item["file_id"]: item
-                for item in download_results
-            }
+            id_to_html = {item["file_id"]: item for item in download_results}
             for item in file_url_list:
                 file_id = item["file_id"]
                 if file_id in id_to_html:
@@ -258,14 +239,7 @@ class HighPerformanceBatchProcessor:
                         item["html"] = item_download["html"]
                         download_success.append(item)
                     else:
-                        failed_results.append({
-                            "file_id": file_id,
-                            "file_url": item_download["file_url"],
-                            "url": item_download["url"],
-                            "success": False,
-                            "error_code": item_download["error_code"],
-                            "error": item_download["error"]
-                        })
+                        failed_results.append({"file_id": file_id, "file_url": item_download["file_url"], "url": item_download["url"], "success": False, "error_code": item_download["error_code"], "error": item_download["error"]})
             end_time = time.time()
             download_duration = end_time - start_time
             logger.info(f"下载文件总耗时: {download_duration:.2f} 秒")
@@ -282,14 +256,7 @@ class HighPerformanceBatchProcessor:
                         token_success_html.append(item)
                         html_list.append(_html)
                     else:
-                        failed_results.append({
-                            "file_id": item["file_id"],
-                            "file_url": item["file_url"],
-                            "url": item["url"],
-                            "success": False,
-                            "error_code": 20002,
-                            "error": "HTML token超过模型最大序列长度"
-                        })
+                        failed_results.append({"file_id": item["file_id"], "file_url": item["file_url"], "url": item["url"], "success": False, "error_code": 20002, "error": "HTML token超过模型最大序列长度"})
                 logger.error(f"需要推理的HTML数量: {len(html_list)}")
                 if html_list:
                     extract_results = dripper_client.process(html_list)
@@ -297,7 +264,7 @@ class HighPerformanceBatchProcessor:
                 error_message = str(e)
                 target_string = "Model response contains no main content labels"
                 if target_string in error_message:
-                    logger.error(f"网页不包含主要内容")
+                    logger.error("网页不包含主要内容")
                 logger.error(f"模型推理失败: {traceback.format_exc()}")
                 # token_success_html = download_success
             logger.error(f"extract_results: {extract_results}")
@@ -313,10 +280,7 @@ class HighPerformanceBatchProcessor:
             completed = 0
             total = len(token_success_html)
             with ThreadPoolExecutor() as executor:
-                future_to_task = {
-                    executor.submit(html_content_conversion, task, str(local_dir)): task
-                    for task in token_success_html
-                }
+                future_to_task = {executor.submit(html_content_conversion, task, str(local_dir)): task for task in token_success_html}
 
                 # 处理完成的任务
                 for future in as_completed(future_to_task):
@@ -326,33 +290,23 @@ class HighPerformanceBatchProcessor:
 
                         # 显示进度
                         if result.get("success"):
-                            logger.info(
-                                f"✓ [{completed}/{total} HTML转Markdown] {result.get('file_id', '')}"
-                            )
+                            logger.info(f"✓ [{completed}/{total} HTML转Markdown] {result.get('file_id', '')}")
                         else:
-                            logger.error(
-                                f"✗ [{completed}/{total} HTML转Markdown] {result.get('file_id', '')} - 错误: {result.get("error")}"
-                            )
+                            logger.error(f"✗ [{completed}/{total} HTML转Markdown] {result.get('file_id', '')} - 错误: {result.get('error')}")
                             result["error"] = "HTML转Markdown失败"
 
                         convert_results.append(result)
                         completed += 1
 
-                    except Exception as e:
+                    except Exception:
                         result = {"file_id": task.get("file_id", ""), "error_code": 30002, "error": "HTML转Markdown发生未知错误"}
                         convert_results.append(result)
                         completed += 1
-                        logger.error(
-                            f"✗ [{completed}/{total} HTML转Markdown] {task.get('file_id', '')} - 异常: {traceback.format_exc()}"
-                        )
+                        logger.error(f"✗ [{completed}/{total} HTML转Markdown] {task.get('file_id', '')} - 异常: {traceback.format_exc()}")
             # 提取成功数据，并根据 file_id 匹配并赋值 compress
             convert_success = []
-            id_to_compress = {
-                item["file_id"]: item["compress"] for item in file_url_list
-            }
-            id_to_md = {
-                item["file_id"]: item for item in convert_results
-            }
+            id_to_compress = {item["file_id"]: item["compress"] for item in file_url_list}
+            id_to_md = {item["file_id"]: item for item in convert_results}
             for item in convert_results:
                 file_id = item["file_id"]
                 success = item["success"]
@@ -361,13 +315,7 @@ class HighPerformanceBatchProcessor:
                         item["compress"] = id_to_compress[file_id]
                         convert_success.append(item)
                 else:
-                    failed_results.append({
-                        "file_id": file_id,
-                        "file_url": item["file_url"],
-                        "success": False,
-                        "error_code": item["error_code"],
-                        "error": item["error"]
-                    })
+                    failed_results.append({"file_id": file_id, "file_url": item["file_url"], "success": False, "error_code": item["error_code"], "error": item["error"]})
             end_time = time.time()
             to_md_duration = end_time - start_time
             logger.info(f"HTML转Markdown总耗时: {to_md_duration:.2f} 秒")
@@ -388,34 +336,26 @@ class HighPerformanceBatchProcessor:
                 if success:
                     upload_success.append(item)
                 else:
-                    failed_results.append({
-                        "file_id": file_id,
-                        "file_url": item["file_url"],
-                        "success": False,
-                        "error_code": item["error_code"],
-                        "error": item["error"]
-                    })
+                    failed_results.append({"file_id": file_id, "file_url": item["file_url"], "success": False, "error_code": item["error_code"], "error": item["error"]})
 
             batch_results = {
                 "successful": upload_success,
                 "failed": failed_results,
             }
-            logger.info(
-                f"批次总耗时: {download_duration + model_duration + to_md_duration + upload_duration} 秒"
-            )
+            logger.info(f"批次总耗时: {download_duration + model_duration + to_md_duration + upload_duration} 秒")
             return batch_results
 
-        except Exception as e:
+        except Exception:
             logger.error(f"批量处理执行错误: {traceback.format_exc()}")
             return {}
 
     def _distribute_results(
         self,
-        batch_requests: List[BatchRequest],
-        batch_results: Dict,
-        request_mapping: Dict,
+        batch_requests: list[BatchRequest],
+        batch_results: dict,
+        request_mapping: dict,
     ):
-        """将批量结果精确分发给每个请求"""
+        """将批量结果精确分发给每个请求."""
         # 按请求ID分组结果
         results_by_request = {}
         for batch_req in batch_requests:
@@ -429,29 +369,17 @@ class HighPerformanceBatchProcessor:
         # 将每个文件结果分配给对应的请求
         for batch_res in batch_results.get("successful", []):
             file_id = batch_res.get("file_id")
-            found_keys = [
-                key
-                for key, value_list in request_mapping.items()
-                if file_id in value_list
-            ]
+            found_keys = [key for key, value_list in request_mapping.items() if file_id in value_list]
             for found_key in found_keys:
                 if found_key and found_key in results_by_request:
-                    results_by_request[found_key]["successful_results"].append(
-                        batch_res
-                    )
+                    results_by_request[found_key]["successful_results"].append(batch_res)
 
         for batch_res in batch_results.get("failed", []):
             file_id = batch_res.get("file_id")
-            found_keys = [
-                key
-                for key, value_list in request_mapping.items()
-                if file_id in value_list
-            ]
+            found_keys = [key for key, value_list in request_mapping.items() if file_id in value_list]
             for found_key in found_keys:
                 if found_key and found_key in results_by_request:
-                    results_by_request[found_key]["failed_results"].append(
-                        batch_res
-                    )
+                    results_by_request[found_key]["failed_results"].append(batch_res)
 
         # 设置每个请求的专属结果
         for batch_req in batch_requests:
@@ -460,16 +388,14 @@ class HighPerformanceBatchProcessor:
             else:
                 batch_req.future.set_exception(Exception("未找到对应结果"))
 
-    def _handle_batch_failure(
-        self, batch_requests: List[BatchRequest], error: Exception
-    ):
-        """处理批次失败情况"""
+    def _handle_batch_failure(self, batch_requests: list[BatchRequest], error: Exception):
+        """处理批次失败情况."""
         for batch_req in batch_requests:
             if not batch_req.future.done():
                 batch_req.future.set_exception(error)
 
     async def stop(self):
-        """停止处理器"""
+        """停止处理器."""
         if self._processor_task:
             logger.info("正在停止批处理器...")
             # 1. 设置停止事件，通知工作协程主动退出
@@ -483,7 +409,7 @@ class HighPerformanceBatchProcessor:
                 logger.info("批处理器已正常停止。")
             except asyncio.CancelledError:
                 logger.info("批处理器任务已被取消。")
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 logger.error("等待批处理器停止超时，可能发生阻塞。")
             finally:
                 self._processor_task = None
@@ -492,8 +418,7 @@ class HighPerformanceBatchProcessor:
 
 
 def html_content_conversion(html_dict: dict, local_dir: str):
-    """
-    内容转换依赖项，统一处理是否压缩的逻辑。
+    """内容转换依赖项，统一处理是否压缩的逻辑。
 
     参数:
         html_content: 要转换的HTML内容字符串。
@@ -507,14 +432,7 @@ def html_content_conversion(html_dict: dict, local_dir: str):
     start_time = time.time()
     file_id = html_dict.get("file_id")
     url = html_dict.get("url")
-    convert_result = {
-        "file_id": file_id,
-        "file_url": html_dict["file_url"],
-        "url": url,
-        "local_path": "",
-        "json_path": "",
-        "success": True
-    }
+    convert_result = {"file_id": file_id, "file_url": html_dict["file_url"], "url": url, "local_path": "", "json_path": "", "success": True}
 
     try:
         main_html = html_dict.get("main_html")
@@ -544,16 +462,14 @@ def html_content_conversion(html_dict: dict, local_dir: str):
         if Path.exists(html_path):
             os.remove(html_path)
 
-    except Exception as e:
+    except Exception:
         convert_result["success"] = False
         convert_result["error_code"] = 30001
         convert_result["error"] = traceback.format_exc()
 
     end_time = time.time()
     duration = end_time - start_time
-    logger.info(
-        f"HTML转Markdown {Path(html_dict['file_url']).name} 耗时: {duration:.2f} 秒"
-    )
+    logger.info(f"HTML转Markdown {Path(html_dict['file_url']).name} 耗时: {duration:.2f} 秒")
 
     return convert_result
 
@@ -567,15 +483,14 @@ batch_processor = HighPerformanceBatchProcessor(
 
 
 def decode_http_urls_only(html_str):
-
     def decode_match(match):
         prefix = match.group(1)  # href=" 或 src="
         url = match.group(2)
         suffix = match.group(3)  # "
 
-        if url.startswith(('http://', 'https://', 'ftp://', '//')):
+        if url.startswith(("http://", "https://", "ftp://", "//")):
             decoded_url = unescape(url)
-            return f'{prefix}{decoded_url}{suffix}'
+            return f"{prefix}{decoded_url}{suffix}"
         return match.group(0)
 
     pattern = r'(href="|src=")(.*?)(")'

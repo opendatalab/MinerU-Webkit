@@ -1,23 +1,24 @@
 import traceback
 from pathlib import Path
-from typing import Optional
-from fastapi import Form
-from . import api_router
-from .schemas import HTMLUrlParseItem, FileParseRequest
-from utils.custom_response import Response
-from utils.path_utils import get_proj_root_dir
+
 from configs import request_id_var
 from configs.response_example import response_example
-from .batch_processor import batch_processor
+from fastapi import Form
 from loguru import logger
+from utils.custom_response import Response
+from utils.path_utils import get_proj_root_dir
+
+from . import api_router
+from .batch_processor import batch_processor
+from .schemas import FileParseRequest, HTMLUrlParseItem
 
 
 def file_form_to_model(
     compress: bool = Form(..., description="是否压缩转换结果"),
-    category: Optional[str] = Form(None, description="上传的文件类型"),
-    description: Optional[str] = Form(None, description="描述"),
+    category: str | None = Form(None, description="上传的文件类型"),
+    description: str | None = Form(None, description="描述"),
 ) -> FileParseRequest:
-    """依赖项函数，将分散的表单参数组装成 FileParseRequest 模型"""
+    """依赖项函数，将分散的表单参数组装成 FileParseRequest 模型."""
     return FileParseRequest(
         compress=compress,
         category=category,
@@ -34,9 +35,7 @@ def file_form_to_model(
 #     return await html_content_conversion(html_content, compress, request_id)
 
 
-@api_router.post(
-    "/url_parse", operation_id="html_url_parse", responses=response_example
-)
+@api_router.post("/url_parse", operation_id="html_url_parse", responses=response_example)
 async def html_url_parse(params: HTMLUrlParseItem):
     """HTML转Markdown(依赖HTML链接)"""
     logger.info(f"Parsing Params: {params.dict()}")
@@ -49,17 +48,13 @@ async def html_url_parse(params: HTMLUrlParseItem):
 
     try:
         # 异步批处理调用
-        batch_result = await batch_processor.add_request(
-            request_id, file_url_list, compress, str(local_dir)
-        )
+        batch_result = await batch_processor.add_request(request_id, file_url_list, compress, str(local_dir))
 
         # 每个请求获得自己专属的结果
         successful_results = batch_result["successful_results"]
         failed_results = batch_result["failed_results"]
 
-        logger.info(
-            f"✅ 请求完成: {request_id}, 总文件数: {len(file_url_list)}, 成功文件: {len(successful_results)}, 失败文件: {len(failed_results)}"
-        )
+        logger.info(f"✅ 请求完成: {request_id}, 总文件数: {len(file_url_list)}, 成功文件: {len(successful_results)}, 失败文件: {len(failed_results)}")
 
         # 直接返回结果给客户端
         return Response(

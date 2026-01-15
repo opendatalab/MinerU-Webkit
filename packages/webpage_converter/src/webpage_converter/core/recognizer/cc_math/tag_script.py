@@ -1,18 +1,18 @@
 import re
-from typing import Dict
+
 from lxml.html import HtmlElement
+
 from webpage_converter.exception.exception import HtmlMathRecognizerException
-from .common import CCMATH, CCMATH_INLINE, CCMATH_INTERLINE, CSDN, MathType, text_strip
 from webpage_converter.utils.html_utils import (
     build_cc_element,
     element_to_html,
     replace_element,
 )
 
+from .common import CCMATH, CCMATH_INLINE, CCMATH_INTERLINE, CSDN, MathType, text_strip
 
-def modify_tree(
-    cm: CCMATH, math_render: str, o_html: str, node: HtmlElement, parent: HtmlElement
-):
+
+def modify_tree(cm: CCMATH, math_render: str, o_html: str, node: HtmlElement, parent: HtmlElement):
     try:
         text = node.text
         if text and text_strip(text):
@@ -85,31 +85,23 @@ def create_new_span(tag_math_type_list, text_content, node, math_render, o_html)
     )
 
 
-def extract_katex_formula(text: str) -> Dict[str, str]:
+def extract_katex_formula(text: str) -> dict[str, str]:
     render_pattern = re.compile(r'katex.render\s*\(\s*"([^"]*)"\s*,\s*(\w+)\s*\)\s*')
     render_matches = render_pattern.findall(text)
-    formulas_dict = {
-        element_id: formula_content for formula_content, element_id in render_matches
-    }
+    formulas_dict = {element_id: formula_content for formula_content, element_id in render_matches}
     return formulas_dict
 
 
 def process_katex_mathml(cm, math_render, node):
     try:
         # 根据节点class确定公式类型
-        equation_type = (
-            CCMATH_INLINE if CSDN.INLINE in node.get("class") else CCMATH_INTERLINE
-        )
+        equation_type = CCMATH_INLINE if CSDN.INLINE in node.get("class") else CCMATH_INTERLINE
         # 查找内部的katex-mathml节点提取公式
         mathml_nodes = node.xpath(f'.//span[@class="{CSDN.MATH}"]')
         if mathml_nodes:
             mathml_node = mathml_nodes[0]
             # 提取latex公式（取最后一行非空内容）
-            lines = [
-                line.strip()
-                for line in mathml_node.text_content().splitlines()
-                if line.strip()
-            ]
+            lines = [line.strip() for line in mathml_node.text_content().splitlines() if line.strip()]
             if lines:
                 latex = lines[-1]
                 if latex:

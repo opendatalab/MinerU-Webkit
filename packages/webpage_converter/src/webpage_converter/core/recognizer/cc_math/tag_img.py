@@ -1,6 +1,10 @@
 from urllib.parse import unquote
+
 from lxml.html import HtmlElement
+
 from webpage_converter.exception.exception import HtmlMathRecognizerException
+from webpage_converter.utils.html_utils import build_cc_element, replace_element
+
 from .common import (
     CCMATH,
     CCMATH_INLINE,
@@ -10,12 +14,9 @@ from .common import (
     MathType,
     text_strip,
 )
-from webpage_converter.utils.html_utils import build_cc_element, replace_element
 
 
-def modify_tree(
-    cm: CCMATH, math_render: str, o_html: str, node: HtmlElement, parent: HtmlElement
-):
+def modify_tree(cm: CCMATH, math_render: str, o_html: str, node: HtmlElement, parent: HtmlElement):
     """识别并处理img标签中的数学公式，将其转换为对应的数学标签。
 
     Args:
@@ -68,11 +69,7 @@ def modify_tree(
         if class_name and class_name in LATEX_IMAGE_CLASS_NAMES:
             text = node.get("alt")
             if text and text_strip(text):
-                new_tag = (
-                    CCMATH_INTERLINE
-                    if is_display_mode(node, src_name)
-                    else CCMATH_INLINE
-                )
+                new_tag = CCMATH_INTERLINE if is_display_mode(node, src_name) else CCMATH_INLINE
                 new_span = build_cc_element(
                     html_tag_name=new_tag,
                     text=cm.wrap_math_md(text),
@@ -89,11 +86,7 @@ def modify_tree(
                 text = unquote(text)
                 text = cm.wrap_math_md(text)
                 text = cm.wrap_math_space(text)
-                new_tag = (
-                    CCMATH_INTERLINE
-                    if is_display_mode(node, src_name)
-                    else CCMATH_INLINE
-                )
+                new_tag = CCMATH_INTERLINE if is_display_mode(node, src_name) else CCMATH_INLINE
                 new_span = build_cc_element(
                     html_tag_name=new_tag,
                     text=text,
@@ -106,19 +99,13 @@ def modify_tree(
 
         if src_name:
             if any(s in src_name for s in LATEX_IMAGE_SRC_NAMES):
-                if any(
-                    src in src_name for src in ["latex.php", "/images/math/codecogs"]
-                ):
+                if any(src in src_name for src in ["latex.php", "/images/math/codecogs"]):
                     text = node.get("alt")
                     if text and text_strip(text):
                         text = unquote(text)
                         text = cm.wrap_math_md(text)
                         text = cm.wrap_math_space(text)
-                        new_tag = (
-                            CCMATH_INTERLINE
-                            if is_display_mode(node, src_name)
-                            else CCMATH_INLINE
-                        )
+                        new_tag = CCMATH_INTERLINE if is_display_mode(node, src_name) else CCMATH_INLINE
                         new_span = build_cc_element(
                             html_tag_name=new_tag,
                             text=text,
@@ -134,11 +121,7 @@ def modify_tree(
                     text = unquote(text)
                     text = cm.wrap_math_md(text)
                     text = cm.wrap_math_space(text)
-                    new_tag = (
-                        CCMATH_INTERLINE
-                        if is_display_mode(node, src_name)
-                        else CCMATH_INLINE
-                    )
+                    new_tag = CCMATH_INTERLINE if is_display_mode(node, src_name) else CCMATH_INLINE
                     new_span = build_cc_element(
                         html_tag_name=new_tag,
                         text=text,

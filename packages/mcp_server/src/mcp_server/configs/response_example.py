@@ -16,7 +16,7 @@ success_response = {
                     "error_code": None,
                     "error": None,
                     "zip_url": "https://cdn-mineru.openxlab.org.cn/html/release/2025-12-30/b8cba7d1-4e29-4b0a-9836-ae46893c7c81.zip",
-                    "date": "Tue, 30 Dec 2025 07:48:43 GMT"
+                    "date": "Tue, 30 Dec 2025 07:48:43 GMT",
                 },
                 {
                     "file_id": "d943a425-c0e0-49ae-a2a8-a6baffc6784e",
@@ -24,10 +24,10 @@ success_response = {
                     "url": "https://arxiv.org/html/2501.00014v1#S4.T1",
                     "success": False,
                     "error_code": 30001,
-                    "error": "HTML转Markdown发生错误"
-                }
-            ]
-        }
+                    "error": "HTML转Markdown发生错误",
+                },
+            ],
+        },
     }
 }
 
@@ -38,26 +38,10 @@ response_example = {
     },
     402: {
         "description": "Fail Response",
-        "content": {
-            "application/json": {
-                "example": {
-                    "code": 402,
-                    "message": "params error",
-                    "data": None
-                }
-            }
-        },
+        "content": {"application/json": {"example": {"code": 402, "message": "params error", "data": None}}},
     },
     422: {
         "description": "Fail Response",
-        "content": {
-            "application/json": {
-                "example": {
-                    "code": 402,
-                    "message": "content error",
-                    "data": None
-                }
-            }
-        },
+        "content": {"application/json": {"example": {"code": 402, "message": "content error", "data": None}}},
     },
 }

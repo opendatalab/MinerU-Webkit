@@ -42,15 +42,11 @@ def html_to_element(html: str) -> HtmlElement:
     Returns:
         element: lxml.html.HtmlElement: element
     """
-    parser = HTMLParser(
-        collect_ids=False, encoding="utf-8", remove_comments=True, remove_pis=True
-    )
+    parser = HTMLParser(collect_ids=False, encoding="utf-8", remove_comments=True, remove_pis=True)
     # 将 HTML 字符串编码为字节类型, 兼容html中有 XML 声明（如 <?xml version="1.0" encoding="utf-8"?>）
     html_bytes = html.encode("utf-8")
     root = fromstring(html_bytes, parser=parser)
-    standalone = deepcopy(
-        root
-    )  # 通过拷贝才能去掉自动加入的<html><body>等标签， 非常奇怪的表现。
+    standalone = deepcopy(root)  # 通过拷贝才能去掉自动加入的<html><body>等标签， 非常奇怪的表现。
     return standalone
 
 
@@ -93,9 +89,7 @@ def build_cc_element(html_tag_name: str, text: str, tail: str, **kwargs) -> Html
         str: cctitle的html
     """
     attrib = {k: str(v) for k, v in kwargs.items()}
-    parser = HTMLParser(
-        collect_ids=False, encoding="utf-8", remove_comments=True, remove_pis=True
-    )
+    parser = HTMLParser(collect_ids=False, encoding="utf-8", remove_comments=True, remove_pis=True)
     cc_element = parser.makeelement(html_tag_name, attrib)
     cc_element.text = text
     cc_element.tail = tail
@@ -193,9 +187,7 @@ def html_to_markdown_table(table_html_source: str) -> str:
         # 如果第一行没有td/th，则取整行内容作为表头
         headers = [_escape_table_cell(first_row.text_content().strip())]
     else:
-        headers = [
-            _escape_table_cell(tag.text_content().strip()) for tag in first_row_tags
-        ]
+        headers = [_escape_table_cell(tag.text_content().strip()) for tag in first_row_tags]
     # 如果表头存在，添加表头和分隔符，并保证表头与最大列数对齐
     if headers:
         while len(headers) < max_cols:
@@ -214,9 +206,7 @@ def html_to_markdown_table(table_html_source: str) -> str:
         if not cells:  # 无td/th时取整行内容，放到第一个单元格
             columns = [_escape_table_cell(row.text_content().strip())]
         else:
-            columns = [
-                _escape_table_cell(cell.text_content().strip()) for cell in cells
-            ]
+            columns = [_escape_table_cell(cell.text_content().strip()) for cell in cells]
         while len(columns) < max_cols:
             columns.append("")
         markdown_table.append("| " + " | ".join(columns) + " |")
@@ -286,6 +276,7 @@ def remove_element(element: HtmlElement):
             previous.tail = (previous.tail or "") + element.tail
     parent.remove(element)
 
+
 def combine_text(text1: str, text2: str, lang="en") -> str:
     """将两段文本合并，中间加空格.
 
@@ -301,18 +292,12 @@ def combine_text(text1: str, text2: str, lang="en") -> str:
         return txt.strip()
     else:
         # 防止字符串为空导致索引错误
-        words_sep = (
-            ""
-            if text2 and (text2[0] in string.punctuation or text2[0] in special_symbols)
-            else " "
-        )
+        words_sep = "" if text2 and (text2[0] in string.punctuation or text2[0] in special_symbols) else " "
         txt = text1 + words_sep + text2
         return txt.strip()
 
 
-def process_sub_sup_tags(
-    element: HtmlElement, current_text: str = "", lang="en", recursive=True
-) -> str:
+def process_sub_sup_tags(element: HtmlElement, current_text: str = "", lang="en", recursive=True) -> str:
     """处理HTML元素中的sub/sup标签，将其转换为GitHub Flavored Markdown格式.
 
     此函数可以处理直接的sub/sup标签元素，也可以处理包含sub/sup标签的父元素。
@@ -329,9 +314,7 @@ def process_sub_sup_tags(
         str: 处理后的文本，包含GitHub Flavored Markdown格式的上标和下标
     """
     # 判断是否是sub/sup上下文
-    is_sub_sup_context = element.tag in ("sub", "sup") or bool(
-        element.xpath(".//sub | .//sup")
-    )
+    is_sub_sup_context = element.tag in ("sub", "sup") or bool(element.xpath(".//sub | .//sup"))
 
     # 直接处理当前元素是sub或sup的情况
     if element.tag == "sub" or element.tag == "sup":
@@ -411,9 +394,7 @@ def get_cc_select_html(element: HtmlElement) -> HtmlElement:
     """
     # 查找所有带有 cc-select="true" 属性的元素，包括当前元素本身
     # 使用 self::*[@cc-select="true"] | .//*[@cc-select="true"] 来包含自己和子节点
-    selected_elements = element.xpath(
-        'self::*[@cc-select="true"] | .//*[@cc-select="true"]'
-    )
+    selected_elements = element.xpath('self::*[@cc-select="true"] | .//*[@cc-select="true"]')
 
     if not selected_elements:
         # 如果没有找到任何元素，返回一个空的div容器
@@ -597,11 +578,8 @@ def optimized_dollar_matching(text):
 
 
 def clean_xml_text(text):
-    """
-    移除 XML 不允许的控制字符。
-    保留合法的空白字符：\\t (制表符), \\n (换行符), \\r (回车符)。
-    """
+    """移除 XML 不允许的控制字符。 保留合法的空白字符：\\t (制表符), \\n (换行符), \\r (回车符)。"""
     if text is None:
         return None
     # 使用正则表达式移除除 \\t, \\n, \\r 外的控制字符 (Unicode 码点范围 0x00-0x1F, 以及 0x7F)
-    return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
+    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)

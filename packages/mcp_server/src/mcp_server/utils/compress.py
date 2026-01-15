@@ -6,11 +6,8 @@ from loguru import logger
 
 
 def compress_directory_to_zip(directory_path, output_zip_path):
-    """
-    压缩指定目录到一个 ZIP 文件。
-    :param directory_path: 要压缩的目录路径
-    :param output_zip_path: 输出的 ZIP 文件路径
-    """
+    """压缩指定目录到一个 ZIP 文件。 :param directory_path: 要压缩的目录路径 :param
+    output_zip_path: 输出的 ZIP 文件路径."""
     try:
         with zipfile.ZipFile(output_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(directory_path):

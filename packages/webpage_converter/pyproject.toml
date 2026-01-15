@@ -23,5 +23,12 @@ dependencies = [
 where = ["src"]
 
 [[tool.uv.index]]
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-default = true
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pre-commit>=4.5.1",
+    "ruff>=0.14.11",
+]

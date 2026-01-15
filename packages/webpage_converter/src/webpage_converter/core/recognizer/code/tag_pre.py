@@ -1,8 +1,9 @@
 from lxml.html import HtmlElement
 
+from webpage_converter.core.base_recognizer import CCTag
+
 # from llm_web_kit.model.code_detector import decide_code_by_str
 from .common import replace_node_by_cccode
-from webpage_converter.core.base_recognizer import CCTag
 
 
 def modify_tree(root: HtmlElement) -> None:

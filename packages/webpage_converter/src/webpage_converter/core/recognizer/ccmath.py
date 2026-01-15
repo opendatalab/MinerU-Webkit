@@ -1,16 +1,17 @@
-from typing import List, Tuple
 from lxml.html import HtmlElement
 from overrides import override
+
+from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer, CCTag
 from webpage_converter.exception.exception import (
     HtmlMathMathjaxRenderRecognizerException,
     HtmlMathRecognizerException,
 )
+from webpage_converter.schemas.doc_element_type import DocElementType
+from webpage_converter.utils.html_utils import iter_node
+
 from .cc_math import tag_img, tag_math, tag_mjx, tag_script
 from .cc_math.common import CCMATH, CSDN, ZHIHU
 from .cc_math.render.render import BaseMathRender, MathRenderType
-from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer, CCTag
-from webpage_converter.schemas.doc_element_type import DocElementType
-from webpage_converter.utils.html_utils import iter_node
 
 
 class MathRecognizer(BaseHTMLElementRecognizer):
@@ -25,10 +26,10 @@ class MathRecognizer(BaseHTMLElementRecognizer):
     def recognize(
         self,
         base_url: str,
-        main_html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        main_html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
         language: str = "en",
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """父类，解析数学公式元素.
 
         Args:
@@ -48,17 +49,13 @@ class MathRecognizer(BaseHTMLElementRecognizer):
             math_render.get_options(raw_html)
         for cc_html, o_html in main_html_lst:
             if not self.is_cc_html(cc_html):
-                result.extend(
-                    self.process_ccmath_html(cc_html, o_html, math_render, base_url)
-                )
+                result.extend(self.process_ccmath_html(cc_html, o_html, math_render, base_url))
             else:
                 result.append((cc_html, o_html))
         return result
 
     @override
-    def to_content_list_node(
-        self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str
-    ) -> dict:
+    def to_content_list_node(self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str) -> dict:
         """将content转换成content_list_node. 每种类型的html元素都有自己的content-list格式：参考
         docs/specification/output_format/content_list_spec.md.
 
@@ -114,13 +111,9 @@ class MathRecognizer(BaseHTMLElementRecognizer):
                 },
             }
         else:
-            raise HtmlMathRecognizerException(
-                f"No ccmath element found in content: {parsed_content}"
-            )
+            raise HtmlMathRecognizerException(f"No ccmath element found in content: {parsed_content}")
 
-    def process_ccmath_html(
-        self, cc_html: str, o_html: str, math_render: BaseMathRender, base_url: str
-    ) -> List[Tuple[str, str]]:
+    def process_ccmath_html(self, cc_html: str, o_html: str, math_render: BaseMathRender, base_url: str) -> list[tuple[str, str]]:
         """处理数学公式，将外层标签修改为 ccmath.
 
         Args:
@@ -143,20 +136,10 @@ class MathRecognizer(BaseHTMLElementRecognizer):
                 parent = node.getparent()
 
                 # 针对csdn博客中的katex标签，提取latex公式
-                if (
-                    self.cm.url
-                    and CSDN.DOMAIN in self.cm.url
-                    and node.tag == "span"
-                    and node.get("class") in [CSDN.INLINE, CSDN.DISPLAY]
-                ):
+                if self.cm.url and CSDN.DOMAIN in self.cm.url and node.tag == "span" and node.get("class") in [CSDN.INLINE, CSDN.DISPLAY]:
                     tag_script.process_katex_mathml(self.cm, math_render_type, node)
 
-                if (
-                    self.cm.url
-                    and ZHIHU.DOMAIN in self.cm.url
-                    and node.tag == "span"
-                    and node.get("class") == ZHIHU.MATH
-                ):
+                if self.cm.url and ZHIHU.DOMAIN in self.cm.url and node.tag == "span" and node.get("class") == ZHIHU.MATH:
                     tag_script.process_zhihu_custom_tag(self.cm, math_render_type, node)
 
                 # 提示：被mathjax兜底覆盖，逻辑已经删除
@@ -174,29 +157,19 @@ class MathRecognizer(BaseHTMLElementRecognizer):
                 if node.tag == "math" or node.tag.endswith(":math"):
                     # print(f"匹配到数学标签: {node.tag}")
                     # print(f"标签内容: {original_html}")
-                    tag_math.modify_tree(
-                        self.cm, math_render_type, original_html, node, parent
-                    )
+                    tag_math.modify_tree(self.cm, math_render_type, original_html, node, parent)
 
                 if node.tag == "mjx-container":
                     tag_mjx.modify_tree(self.cm, math_render, original_html, node)
 
                 # img中的latex
                 if node.tag == "img":
-                    tag_img.modify_tree(
-                        self.cm, math_render_type, original_html, node, parent
-                    )
+                    tag_img.modify_tree(self.cm, math_render_type, original_html, node, parent)
 
                 # span.katex
-                if (
-                    node.tag == "script"
-                    or "math" == node.get("class")
-                    or "katex" == node.get("class")
-                ):
+                if node.tag == "script" or "math" == node.get("class") or "katex" == node.get("class"):
                     # print('匹配到script/math/katex标签: ', original_html)
-                    tag_script.modify_tree(
-                        self.cm, math_render_type, original_html, node, parent
-                    )
+                    tag_script.modify_tree(self.cm, math_render_type, original_html, node, parent)
 
             # procsee2: mathjax渲染器逻辑
             try:
@@ -210,9 +183,7 @@ class MathRecognizer(BaseHTMLElementRecognizer):
                     math_render = MathJaxRenderMock()
                     math_render.find_math(tree)
             except Exception as e:
-                raise HtmlMathMathjaxRenderRecognizerException(
-                    f"处理MathjaxRender数学公式失败: {e}"
-                )
+                raise HtmlMathMathjaxRenderRecognizerException(f"处理MathjaxRender数学公式失败: {e}")
             # 保存处理后的html
             # with open('test20250702_result.html', 'w', encoding='utf-8') as f:
             #     f.write(self._element_to_html(tree))

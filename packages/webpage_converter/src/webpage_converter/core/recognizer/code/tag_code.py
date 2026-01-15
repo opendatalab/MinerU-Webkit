@@ -1,8 +1,10 @@
 from collections import deque
-from typing import Optional
+
 from lxml.html import HtmlElement
-from .common import _BLOCK_ELES, replace_node_by_cccode
+
 from webpage_converter.core.base_recognizer import CCTag
+
+from .common import _BLOCK_ELES, replace_node_by_cccode
 
 """
 处理仅由<code>标签组成的代码块
@@ -13,21 +15,10 @@ def __is_all_chars_in_code_element(node: HtmlElement) -> bool:
     if node.tag == "code":
         return True
 
-    full_chars = (
-        c
-        for text in node.itertext()
-        for c in text
-        if not c.isspace() and not c.isdigit()
-    )
+    full_chars = (c for text in node.itertext() for c in text if not c.isspace() and not c.isdigit())
 
     node_texts = node.xpath(".//code//text()")
-    code_chars = (
-        c
-        for code in node_texts
-        for text in code
-        for c in text
-        if not c.isspace() and not c.isdigit()
-    )
+    code_chars = (c for code in node_texts for text in code for c in text if not c.isspace() and not c.isdigit())
 
     for f, c in zip(full_chars, code_chars):
         if f != c:
@@ -114,9 +105,7 @@ def __group_code(nodes: list[HtmlElement]) -> list[HtmlElement]:
     processed = set()
     nodes_deque = deque(nodes)
 
-    def next_parent(
-        code_node: HtmlElement, code_tags: int
-    ) -> tuple[Optional[HtmlElement], int]:
+    def next_parent(code_node: HtmlElement, code_tags: int) -> tuple[HtmlElement | None, int]:
         """查找父节点中第一个 <code> 标签数量不同的节点。
 
         Args:
@@ -125,7 +114,7 @@ def __group_code(nodes: list[HtmlElement]) -> list[HtmlElement]:
         Returns:
             (父节点, 父节点的 <code> 标签数量)，若无符合条件的父节点则返回 (None, 0)
         """
-        parent: Optional[HtmlElement] = code_node.getparent()
+        parent: HtmlElement | None = code_node.getparent()
         while parent is not None:
             new_code_tags = len(parent.xpath(".//code"))
             if new_code_tags == code_tags:

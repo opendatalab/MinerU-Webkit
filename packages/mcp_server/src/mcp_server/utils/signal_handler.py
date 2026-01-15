@@ -1,10 +1,11 @@
 import signal
 import threading
+
 from loguru import logger  # 或使用 logging
 
 
 class GlobalSignalHandler:
-    """全局信号处理器，用于协调多个服务的优雅停止"""
+    """全局信号处理器，用于协调多个服务的优雅停止."""
 
     def __init__(self):
         # 创建一个全局事件来通知停止
@@ -15,9 +16,7 @@ class GlobalSignalHandler:
         # self._lock = threading.Lock()
 
     def __call__(self, signum, frame):
-        """
-        当捕获到信号（如SIGINT, SIGTERM）时，此方法被调用。
-        """
+        """当捕获到信号（如SIGINT, SIGTERM）时，此方法被调用。"""
         logger.info(f"捕获到信号 {signum}，开始执行优雅停止...")
 
         # 1. 设置全局停止事件，通知所有监听此事件的循环或线程

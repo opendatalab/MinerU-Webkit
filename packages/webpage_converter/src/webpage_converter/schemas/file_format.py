@@ -1,4 +1,4 @@
-class FileFormatConstant(object):
+class FileFormatConstant:
     MARKDOWN = ["md"]
     HTML = ["html"]
     TXT = ["txt", "text"]

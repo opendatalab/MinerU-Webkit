@@ -1,13 +1,14 @@
 import copy
 import re
-from typing import Any, List, Tuple
+from typing import Any
+
 from lxml import html
 from lxml.html import HtmlElement
 from lxml.html.clean import Cleaner
 from overrides import override
-from webpage_converter.exception.exception import HtmlTableRecognizerException
-from .ccmath import MathRecognizer
+
 from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer, CCTag
+from webpage_converter.exception.exception import HtmlTableRecognizerException
 from webpage_converter.schemas.doc_element_type import DocElementType
 from webpage_converter.utils.html_utils import (
     element_to_html_unescaped,
@@ -18,11 +19,11 @@ from webpage_converter.utils.html_utils import (
     restore_sub_sup_from_text_regex,
 )
 from webpage_converter.utils.text_utils import normalize_text_segment
+
+from .ccmath import MathRecognizer
 from .text import inline_tags
 
-new_inline_tags = inline_tags.union(
-    {"table", "tr", "td", "th", "thead", "tbody", "tfoot", "caption"}
-)
+new_inline_tags = inline_tags.union({"table", "tr", "td", "th", "thead", "tbody", "tfoot", "caption"})
 
 allow_tags = [
     "table",
@@ -97,10 +98,10 @@ class TableRecognizer(BaseHTMLElementRecognizer):
     def recognize(
         self,
         base_url: str,
-        main_html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        main_html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
         language: str = "en",
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """父类，解析表格元素.
 
         Args:
@@ -121,9 +122,7 @@ class TableRecognizer(BaseHTMLElementRecognizer):
         return final_result
 
     @override
-    def to_content_list_node(
-        self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str
-    ) -> dict:
+    def to_content_list_node(self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str) -> dict:
         table_type, table_nest_level, table_body = self.__get_attribute(parsed_content)
 
         # 确保 table_body 不为 None 且是字符串类型
@@ -189,15 +188,11 @@ class TableRecognizer(BaseHTMLElementRecognizer):
             rowspan_str = cell.get("rowspan", "1").strip("\"'\\,.:")
             # colspan和rowspan的值为百分数时设置为100，否则尝试转为整数，默认为1
             try:
-                colspan = (
-                    100 if self.__is_percentage(colspan_str) else int(colspan_str or 1)
-                )
+                colspan = 100 if self.__is_percentage(colspan_str) else int(colspan_str or 1)
             except ValueError:
                 colspan = 1
             try:
-                rowspan = (
-                    100 if self.__is_percentage(rowspan_str) else int(rowspan_str or 1)
-                )
+                rowspan = 100 if self.__is_percentage(rowspan_str) else int(rowspan_str or 1)
             except ValueError:
                 rowspan = 1
             if (colspan > 1) or (rowspan > 1):
@@ -228,9 +223,7 @@ class TableRecognizer(BaseHTMLElementRecognizer):
                     stack.append((child, current_level))
         return max_level
 
-    def __extract_tables(
-        self, tree: HtmlElement
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    def __extract_tables(self, tree: HtmlElement) -> list[tuple[HtmlElement, HtmlElement]]:
         """提取html中的table元素."""
         self.__do_extract_tables(tree)
         new_html = tree
@@ -295,9 +288,7 @@ class TableRecognizer(BaseHTMLElementRecognizer):
                         result.append(node.tail.strip())
                 elif node.tag in ["sub", "sup"]:
                     # 使用process_sub_sup_tags保留原始的sub/sup标签
-                    processed_text = process_sub_sup_tags(
-                        node, "", lang="en", recursive=True
-                    )
+                    processed_text = process_sub_sup_tags(node, "", lang="en", recursive=True)
                     if processed_text:
                         result.append(processed_text)
                     if node.tail and node.tail.strip():
@@ -328,22 +319,14 @@ class TableRecognizer(BaseHTMLElementRecognizer):
 
     def __simplify_td_th_content(self, table_nest_level, elem: HtmlElement) -> None:
         """简化 <td> 和 <th> 内容，保留嵌套表格结构."""
-        if (
-            elem.tag in ["td", "th", "table"]
-            or any(child.tag in ["table", "td", "th"] for child in elem.iterchildren())
-            or elem.xpath(".//table")
-            or elem.xpath(".//td")
-            or elem.xpath(".//th")
-        ):
+        if elem.tag in ["td", "th", "table"] or any(child.tag in ["table", "td", "th"] for child in elem.iterchildren()) or elem.xpath(".//table") or elem.xpath(".//td") or elem.xpath(".//th"):
             if len(elem) > 0:
                 # 需要继续遍历的情况
                 for child in elem.iterchildren():
                     self.__simplify_td_th_content(table_nest_level, child)
             else:
                 math_res = self.__check_table_include_math_code(elem)
-                math_res_text = " ".join(
-                    normalize_text_segment(item) for item in math_res
-                )
+                math_res_text = " ".join(normalize_text_segment(item) for item in math_res)
                 # 清除math和code元素
                 if any(
                     child.tag
@@ -361,13 +344,9 @@ class TableRecognizer(BaseHTMLElementRecognizer):
             math_res = self.__check_table_include_math_code(elem)
             elem.clear()
             if elem.tag not in new_inline_tags:
-                math_res_text = (
-                    " ".join(normalize_text_segment(item) for item in math_res) + "\n\n"
-                )
+                math_res_text = " ".join(normalize_text_segment(item) for item in math_res) + "\n\n"
             else:
-                math_res_text = " ".join(
-                    normalize_text_segment(item) for item in math_res
-                )
+                math_res_text = " ".join(normalize_text_segment(item) for item in math_res)
             if elem.tag in VOID_ELEMENTS:
                 elem_pre = elem.getprevious()
                 if elem_pre is not None:
@@ -375,11 +354,7 @@ class TableRecognizer(BaseHTMLElementRecognizer):
                 else:
                     elem_parent = elem.getparent()
                     if elem_parent is not None:
-                        elem_parent_text = (
-                            elem_parent.text + " "
-                            if elem_parent is not None and elem_parent.text is not None
-                            else ""
-                        )
+                        elem_parent_text = elem_parent.text + " " if elem_parent is not None and elem_parent.text is not None else ""
                         elem_parent.text = elem_parent_text + math_res_text
             else:
                 elem.text = math_res_text
@@ -439,7 +414,7 @@ class TableRecognizer(BaseHTMLElementRecognizer):
         for child in root.iterchildren():
             self.__do_extract_tables(child)
 
-    def __get_attribute(self, ele: HtmlElement) -> Tuple[bool, Any, Any]:
+    def __get_attribute(self, ele: HtmlElement) -> tuple[bool, Any, Any]:
         """获取element的属性."""
         # ele = self._build_html_tree(html)
         if ele is not None and ele.tag == CCTag.CC_TABLE:
@@ -452,7 +427,7 @@ class TableRecognizer(BaseHTMLElementRecognizer):
             raise HtmlTableRecognizerException(f"{ele}中没有cctable标签")
 
     def __get_content_list_table_type(self, table_type):
-        """complex|simple 转为True|False."""
+        """Complex|simple 转为True|False."""
         is_complex = False
         if table_type == "simple":
             is_complex = False

@@ -1,4 +1,5 @@
 from overrides import override
+
 from ..abstracts.post_abstract import BaseFileFormatPostConverter
 from ..schemas.datajson import DataJson, DataJsonKey
 from ..schemas.doc_element_type import DocElementType, ParagraphTextType
@@ -75,13 +76,9 @@ class ContentListStripSpacePostConverter(BaseFileFormatPostConverter):
             for content_node in page:
                 # 只对list和paragraph进行处理
                 if content_node["type"] == DocElementType.PARAGRAPH:
-                    content_node["content"] = self.__do_normalize_text(
-                        content_node["content"]
-                    )
+                    content_node["content"] = self.__do_normalize_text(content_node["content"])
                 elif content_node["type"] == DocElementType.TITLE:
-                    content_node["content"]["title_content"] = normalize_text_segment(
-                        content_node["content"]["title_content"]
-                    )
+                    content_node["content"]["title_content"] = normalize_text_segment(content_node["content"]["title_content"])
         return data_json
 
     def __do_normalize_text(self, paragraph: list[dict]) -> list[dict]:

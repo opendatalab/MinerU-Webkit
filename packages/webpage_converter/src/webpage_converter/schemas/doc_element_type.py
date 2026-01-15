@@ -1,11 +1,11 @@
-class ParagraphTextType(object):
+class ParagraphTextType:
     TEXT = "text"
     MARKDOWN = "md"
     EQUATION_INLINE = "equation-inline"
     CODE_INLINE = "code-inline"
 
 
-class DocElementType(object):
+class DocElementType:
     PARAGRAPH = "paragraph"
     LIST = "list"
     SIMPLE_TABLE = "simple_table"

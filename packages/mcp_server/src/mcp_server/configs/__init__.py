@@ -1,10 +1,12 @@
-from functools import lru_cache
 from contextvars import ContextVar
-from .config import Config
+from functools import lru_cache
+
 from dripper.api import Dripper
 
+from .config import Config
 
-@lru_cache()
+
+@lru_cache
 def get_configs() -> Config:
     """获取应用配置单例."""
     return Config()

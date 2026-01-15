@@ -60,17 +60,15 @@ print(result)
 
 ### Configuration Options
 
-
-| Parameter             | Type | Default             | Description                                                                         |
-|-----------------------|------|---------------------|-------------------------------------------------------------------------------------|
-| `main_html`           | str  | **Required**        | HTML that needs to be converted                                                     |
-| `url`                 | str  | https://example.com | The URL link for HTML is required in mm_md mode                                     |
-| `output_format`       | str  | mm_md               | Conversion format, supports mm_md (markdown), md (markdown with images), json, txt  |
-| `use_raw_image_url`   | bool | True                | Whether to use the original image URL (only valid for mm_md format)                 |
+| Parameter           | Type | Default             | Description                                                                        |
+| ------------------- | ---- | ------------------- | ---------------------------------------------------------------------------------- |
+| `main_html`         | str  | **Required**        | HTML that needs to be converted                                                    |
+| `url`               | str  | https://example.com | The URL link for HTML is required in mm_md mode                                    |
+| `output_format`     | str  | mm_md               | Conversion format, supports mm_md (markdown), md (markdown with images), json, txt |
+| `use_raw_image_url` | bool | True                | Whether to use the original image URL (only valid for mm_md format)                |
 
 # TODO
 
 # contributors
 
 ![contributors](https://contrib.rocks/image?repo=ccprocessor/llm-webkit-mirror)
-

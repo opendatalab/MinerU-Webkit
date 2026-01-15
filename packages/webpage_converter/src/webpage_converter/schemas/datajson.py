@@ -1,11 +1,10 @@
 import copy
 import json
 from abc import ABC, abstractmethod
-from typing import Dict, List
+
 from overrides import override
+
 from ..exception.exception import ExtractorChainInputException
-from .struct import ListAttribute
-from .doc_element_type import DocElementType, ParagraphTextType
 from ..utils.encode import sha256_hash
 from ..utils.html_utils import (
     get_element_text,
@@ -14,9 +13,11 @@ from ..utils.html_utils import (
     table_cells_count,
 )
 from ..utils.text_utils import normalize_math_delimiters
+from .doc_element_type import DocElementType, ParagraphTextType
+from .struct import ListAttribute
 
 
-class DataJsonKey(object):
+class DataJsonKey:
     """DataJson的键值key常量定义."""
 
     DATASET_NAME = "dataset_name"
@@ -26,7 +27,7 @@ class DataJsonKey(object):
     STATICS = "statics"
 
 
-class DataSourceCategory(object):
+class DataSourceCategory:
     """数据源类型常量定义.
 
     这是对我们将要处理的数据的一种分类：
@@ -99,9 +100,7 @@ class StructureMapper(ABC):
         md = self.__to_md(exclude_nodes, exclude_inline_types, use_raw_image_url)
         return md
 
-    def to_txt(
-        self, exclude_nodes=DocElementType.MM_NODE_LIST, exclude_inline_types=[]
-    ):
+    def to_txt(self, exclude_nodes=DocElementType.MM_NODE_LIST, exclude_inline_types=[]):
         """把content_list转化为txt格式.
 
         Args:
@@ -109,16 +108,12 @@ class StructureMapper(ABC):
         Returns:
             str: txt格式的文本内容
         """
-        text_blocks: list[
-            str
-        ] = []  # 每个是个DocElementType规定的元素块之一转换成的文本
+        text_blocks: list[str] = []  # 每个是个DocElementType规定的元素块之一转换成的文本
         content_lst = self._get_data()
         for page in content_lst:
             for content_lst_node in page:
                 if content_lst_node["type"] not in exclude_nodes:
-                    txt_content = self.__content_lst_node_2_txt(
-                        content_lst_node, exclude_inline_types
-                    )
+                    txt_content = self.__content_lst_node_2_txt(content_lst_node, exclude_inline_types)
                     if txt_content and len(txt_content) > 0:
                         text_blocks.append(txt_content)
 
@@ -127,9 +122,7 @@ class StructureMapper(ABC):
         txt = txt.strip() + self.__text_end  # 加上结尾换行符
         return txt
 
-    def __to_md(
-        self, exclude_nodes=[], exclude_inline_types=[], use_raw_image_url=False
-    ):
+    def __to_md(self, exclude_nodes=[], exclude_inline_types=[], use_raw_image_url=False):
         """把content_list转化为md格式.
 
         Args:
@@ -142,14 +135,8 @@ class StructureMapper(ABC):
         for page in content_lst:
             for content_lst_node in page:
                 if content_lst_node["type"] not in exclude_nodes:
-                    txt_content = self.__content_lst_node_2_md(
-                        content_lst_node, exclude_inline_types, use_raw_image_url
-                    )
-                    if (
-                        len(md_blocks) > 0
-                        and not txt_content.startswith("\n")
-                        and not md_blocks[-1].endswith("\n")
-                    ):  # 若段落间没有换行，则添加换行
+                    txt_content = self.__content_lst_node_2_md(content_lst_node, exclude_inline_types, use_raw_image_url)
+                    if len(md_blocks) > 0 and not txt_content.startswith("\n") and not md_blocks[-1].endswith("\n"):  # 若段落间没有换行，则添加换行
                         md_blocks.append("\n\n")
                     if txt_content and len(txt_content) > 0:
                         md_blocks.append(txt_content)
@@ -167,33 +154,21 @@ class StructureMapper(ABC):
         if not isinstance(exclude_nodes, list):
             raise ExtractorChainInputException("exclude_nodes must be a list type.")
         if not isinstance(exclude_inline_types, list):
-            raise ExtractorChainInputException(
-                "exclude_inline_types must be a list type."
-            )
+            raise ExtractorChainInputException("exclude_inline_types must be a list type.")
         for node in exclude_nodes:
             if node not in self.__nodes_document_type:
-                raise ExtractorChainInputException(
-                    f"exclude_nodes contains invalid element type: {node}"
-                )
+                raise ExtractorChainInputException(f"exclude_nodes contains invalid element type: {node}")
         for inline_type in exclude_inline_types:
             if inline_type not in self.__inline_types_document_type:
-                raise ExtractorChainInputException(
-                    f"exclude_inline_types contains invalid inline type: {inline_type}"
-                )
+                raise ExtractorChainInputException(f"exclude_inline_types contains invalid inline type: {inline_type}")
         return exclude_nodes, exclude_inline_types
 
     def to_nlp_md(self, exclude_nodes=[], exclude_inline_types=[]):
-        exclude_nodes, exclude_inline_types = self.__validate_exclude_nodes(
-            exclude_nodes, exclude_inline_types
-        )
-        md = self.__to_md(
-            exclude_nodes + DocElementType.MM_NODE_LIST, exclude_inline_types
-        )
+        exclude_nodes, exclude_inline_types = self.__validate_exclude_nodes(exclude_nodes, exclude_inline_types)
+        md = self.__to_md(exclude_nodes + DocElementType.MM_NODE_LIST, exclude_inline_types)
         return md
 
-    def to_mm_md(
-        self, exclude_nodes=[], exclude_inline_types=[], use_raw_image_url=False
-    ):
+    def to_mm_md(self, exclude_nodes=[], exclude_inline_types=[], use_raw_image_url=False):
         self.__validate_exclude_nodes(exclude_nodes, exclude_inline_types)
         md = self.__to_md(exclude_nodes, exclude_inline_types, use_raw_image_url)
         return md
@@ -209,12 +184,10 @@ class StructureMapper(ABC):
         return copy.deepcopy(self._get_data())
 
     @abstractmethod
-    def _get_data(self) -> List[Dict]:
+    def _get_data(self) -> list[dict]:
         raise NotImplementedError("This method must be implemented by the subclass.")
 
-    def __process_nested_list(
-        self, items, list_attribute, indent_level=0, exclude_inline_types=[]
-    ):
+    def __process_nested_list(self, items, list_attribute, indent_level=0, exclude_inline_types=[]):
         """处理新格式的嵌套列表结构.
 
         Args:
@@ -244,15 +217,9 @@ class StructureMapper(ABC):
 
                 # 处理嵌套子列表，同样不添加特殊缩进
                 child_list = item.get("child_list", {})
-                if (
-                    child_list
-                    and isinstance(child_list, dict)
-                    and "items" in child_list
-                ):
+                if child_list and isinstance(child_list, dict) and "items" in child_list:
                     child_items = child_list.get("items", [])
-                    child_attribute = child_list.get(
-                        "list_attribute", ListAttribute.UNORDERED
-                    )
+                    child_attribute = child_list.get("list_attribute", ListAttribute.UNORDERED)
 
                     if child_items:
                         # 传递原始缩进级别，不额外增加
@@ -271,12 +238,7 @@ class StructureMapper(ABC):
                 # 尝试处理嵌套列表情况
                 if isinstance(item, list):
                     # 如果是嵌套列表，转换为标准格式
-                    if (
-                        item
-                        and isinstance(item[0], list)
-                        and item[0]
-                        and isinstance(item[0][0], dict)
-                    ):
+                    if item and isinstance(item[0], list) and item[0] and isinstance(item[0][0], dict):
                         item = item[0][0]  # 取出实际的字典对象
                     else:
                         continue  # 跳过无法处理的情况
@@ -293,9 +255,7 @@ class StructureMapper(ABC):
             child_list = item.get("child_list", {})
             if child_list and isinstance(child_list, dict) and "items" in child_list:
                 child_items = child_list.get("items", [])
-                child_attribute = child_list.get(
-                    "list_attribute", ListAttribute.UNORDERED
-                )
+                child_attribute = child_list.get("list_attribute", ListAttribute.UNORDERED)
 
                 if child_items:
                     child_result = self.__process_nested_list(
@@ -323,11 +283,7 @@ class StructureMapper(ABC):
         """
         node_type = content_lst_node["type"]
         if node_type == DocElementType.CODE:
-            code = content_lst_node[
-                "content"
-            ][
-                "code_content"
-            ]  # 这里禁止有None的content, 如果有应该消灭在模块内部。模块应该处理更精细，防止因为拼装导致掩盖了错误。
+            code = content_lst_node["content"]["code_content"]  # 这里禁止有None的content, 如果有应该消灭在模块内部。模块应该处理更精细，防止因为拼装导致掩盖了错误。
             # 代码不可以 strip，因为首行可能有缩进，只能 rstrip
             code = code.rstrip()
             if not code:
@@ -419,9 +375,7 @@ class StructureMapper(ABC):
             list_content = content_lst_node["content"]
             list_attribute = list_content.get("list_attribute", ListAttribute.UNORDERED)
             items = list_content.get("items", [])
-            result = self.__process_nested_list(
-                items, list_attribute, 0, exclude_inline_types
-            )
+            result = self.__process_nested_list(items, list_attribute, 0, exclude_inline_types)
             return "\n".join(result)
         elif node_type == DocElementType.SIMPLE_TABLE:
             # 对文本格式来说，普通表格直接转为md表格，复杂表格返还原始html
@@ -444,9 +398,7 @@ class StructureMapper(ABC):
             else:
                 return ""
         else:
-            raise ValueError(
-                f"content_lst_node contains invalid element type: {node_type}"
-            )  # TODO: 自定义异常
+            raise ValueError(f"content_lst_node contains invalid element type: {node_type}")  # TODO: 自定义异常
 
     def __escape_md_special_chars(self, txt: str) -> str:
         """转义markdown特殊字符.
@@ -484,9 +436,7 @@ class StructureMapper(ABC):
 
         return md_list_item
 
-    def __content_lst_node_2_txt(
-        self, content_lst_node: dict, exclude_inline_types=[]
-    ) -> str:
+    def __content_lst_node_2_txt(self, content_lst_node: dict, exclude_inline_types=[]) -> str:
         """把content_list里定义的每种元素块转化为纯文本格式.
 
         Args:
@@ -523,9 +473,7 @@ class StructureMapper(ABC):
             if image_caption:
                 image_caption = image_caption.strip()
 
-            image_des = (
-                image_title if image_title else image_caption if image_caption else ""
-            )
+            image_des = image_title if image_title else image_caption if image_caption else ""
             # 优先使用data, 其次path.其中data是base64编码的图片，path是图片的url
             if image_data:
                 image = f'![{image_alt}]({image_data} "{image_des}")'
@@ -550,9 +498,7 @@ class StructureMapper(ABC):
             list_content = content_lst_node["content"]
             list_attribute = list_content.get("list_attribute", ListAttribute.UNORDERED)
             items = list_content.get("items", [])
-            result = self.__process_nested_list(
-                items, list_attribute, 0, exclude_inline_types
-            )
+            result = self.__process_nested_list(items, list_attribute, 0, exclude_inline_types)
             return "\n".join(result)
         elif node_type == DocElementType.SIMPLE_TABLE:
             # 对文本格式来说，普通表格直接转为md表格，复杂表格返还原始html
@@ -571,9 +517,7 @@ class StructureMapper(ABC):
             else:
                 return ""
         else:
-            raise ValueError(
-                f"content_lst_node contains invalid element type: {node_type}"
-            )
+            raise ValueError(f"content_lst_node contains invalid element type: {node_type}")
 
     def __join_one_para(self, para: list, exclude_inline_types: list = []) -> str:
         """把一个段落的元素块连接起来.
@@ -598,14 +542,12 @@ class StructureMapper(ABC):
             elif el["t"] == ParagraphTextType.CODE_INLINE:
                 one_para.append(f"`{el['c'].strip()}`")
             else:
-                raise ValueError(
-                    f"paragraph_el_lst contains invalid element type: {el['t']}"
-                )
+                raise ValueError(f"paragraph_el_lst contains invalid element type: {el['t']}")
 
         return " ".join(one_para)
 
 
-class StructureChecker(object):
+class StructureChecker:
     def _validate(self, json_obj: dict):
         """校验json_obj是否符合要求 如果不符合要求就抛出异常.
 
@@ -644,7 +586,7 @@ class ContentList(StructureMapper):
         del self.__content_list[key]
 
     @override
-    def _get_data(self) -> List[Dict]:
+    def _get_data(self) -> list[dict]:
         return self.__content_list
 
 
@@ -657,15 +599,11 @@ class DataJson(StructureChecker):
         Args:
             input_data (dict): _description_
         """
-        copied_input = copy.deepcopy(
-            input_data
-        )  # 防止修改外部数据，同时也让修改这个变量必须通过函数方法
+        copied_input = copy.deepcopy(input_data)  # 防止修改外部数据，同时也让修改这个变量必须通过函数方法
         self._validate(copied_input)
         self.__json_data = copied_input
         if DataJsonKey.CONTENT_LIST in copied_input:
-            self.__json_data[DataJsonKey.CONTENT_LIST] = ContentList(
-                copied_input[DataJsonKey.CONTENT_LIST]
-            )
+            self.__json_data[DataJsonKey.CONTENT_LIST] = ContentList(copied_input[DataJsonKey.CONTENT_LIST])
         if DataJsonKey.CONTENT_LIST not in self.__json_data:
             self.__json_data[DataJsonKey.CONTENT_LIST] = ContentList([])
 

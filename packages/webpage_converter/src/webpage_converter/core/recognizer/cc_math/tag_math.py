@@ -4,7 +4,6 @@ from copy import deepcopy
 from lxml.html import HtmlElement
 
 from webpage_converter.exception.exception import HtmlMathRecognizerException
-from .common import CCMATH, MathType, text_strip
 from webpage_converter.utils.html_utils import (
     build_cc_element,
     check_and_balance_delimiters,
@@ -12,14 +11,12 @@ from webpage_converter.utils.html_utils import (
     replace_element,
 )
 
+from .common import CCMATH, MathType, text_strip
 
-def modify_tree(
-    cm: CCMATH, math_render: str, o_html: str, node: HtmlElement, parent: HtmlElement
-):
+
+def modify_tree(cm: CCMATH, math_render: str, o_html: str, node: HtmlElement, parent: HtmlElement):
     try:
-        annotation_tags = node.xpath(
-            './/*[local-name()="annotation"][@encoding="application/x-tex"]'
-        )
+        annotation_tags = node.xpath('.//*[local-name()="annotation"][@encoding="application/x-tex"]')
         math_type = MathType.MATHML
         tag_math_type_list = cm.get_equation_type(o_html)
         if not tag_math_type_list:
@@ -32,9 +29,7 @@ def modify_tree(
             if parent is not None:
                 style_value = parent.get("style")
                 if style_value:
-                    normalized_style_value = (
-                        style_value.lower().strip().replace(" ", "").replace(";", "")
-                    )
+                    normalized_style_value = style_value.lower().strip().replace(" ", "").replace(";", "")
                     if "display: none" in normalized_style_value:
                         parent.style = ""
             text = cm.wrap_math_md(text)
@@ -69,14 +64,10 @@ def modify_tree(
             mathml = element_to_html(tmp_node)
 
             if "xmlns:" in mathml or re.search(r"<\w+:", mathml):
-                mathml = re.sub(
-                    r'xmlns:\w+="([^"]*)"', r'xmlns="\1"', mathml
-                )  # remove any xmlns:prefix
+                mathml = re.sub(r'xmlns:\w+="([^"]*)"', r'xmlns="\1"', mathml)  # remove any xmlns:prefix
                 mathml = re.sub(r"<(\w+):", "<", mathml)  # remove any prefix:mi
                 mathml = re.sub(r"</(\w+):", "</", mathml)  # remove any /prefix:mi
-                mathml = re.sub(
-                    r"([^\s])\s+([^\s])", r"\1 \2", mathml
-                )  # remove extra spaces
+                mathml = re.sub(r"([^\s])\s+([^\s])", r"\1 \2", mathml)  # remove extra spaces
 
             latex = cm.mml_to_latex(mathml)
             # 处理未转义的%为\%

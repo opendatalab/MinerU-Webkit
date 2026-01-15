@@ -1,16 +1,10 @@
 """基本的元素解析类."""
 
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+
 from lxml.html import HtmlElement, HTMLParser
-from ..utils.html_utils import (
-    build_cc_element,
-    element_to_html,
-    element_to_html_unescaped,
-    html_to_element,
-    replace_element,
-    clean_xml_text
-)
+
+from ..utils.html_utils import build_cc_element, clean_xml_text, element_to_html, element_to_html_unescaped, html_to_element, replace_element
 from ..utils.logger import mylogger
 
 
@@ -29,20 +23,17 @@ class CCTag:
 
 
 class BaseHTMLElementRecognizer(ABC):
-    HTML_PARSER = HTMLParser(
-        collect_ids=False, encoding="utf-8", remove_comments=True, remove_pis=True
-    )
-
+    HTML_PARSER = HTMLParser(collect_ids=False, encoding="utf-8", remove_comments=True, remove_pis=True)
     """基本的元素解析类."""
 
     @abstractmethod
     def recognize(
         self,
         base_url: str,
-        main_html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        main_html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """父类，解析html中的元素.
 
         Args:
@@ -56,24 +47,13 @@ class BaseHTMLElementRecognizer(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def to_content_list_node(
-        self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str
-    ) -> dict:
-        """将content转换成content_list_node.
-        每种类型的html元素都有自己的content-list格式：参考 docs/specification/output_format/content_list_spec.md
-        例如代码的返回格式：
-        ```json
-        {
-            "type": "code",
-            "bbox": [0, 0, 50, 50],
-            "raw_content": "<code>def add(a, b):\n    return a + b</code>" // 原始的html代码
-            "content": {
-                  "code_content": "def add(a, b):\n    return a + b",
-                  "language": "python",
-                  "by": "hilightjs"
-            }
-        }
-        ```
+    def to_content_list_node(self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str) -> dict:
+        """将content转换成content_list_node. 每种类型的html元素都有自己的content-list格式：参考
+        docs/specification/output_format/content_list_spec.md 例如代码的返回格式：
+        ```json { "type": "code", "bbox": [0, 0, 50, 50], "raw_content":
+        "<code>def add(a, b):\n    return a + b</code>" // 原始的html代码 "content":
+        { "code_content": "def add(a, b):\n    return a + b", "language":
+        "python", "by": "hilightjs" } } ```
 
         Args:
             base_url: str: 基础url
@@ -111,9 +91,7 @@ class BaseHTMLElementRecognizer(ABC):
         """将element转换成html字符串."""
         return element_to_html_unescaped(element)
 
-    def _build_cc_element(
-        self, html_tag_name: str, text: str, tail: str, **kwargs
-    ) -> HtmlElement:
+    def _build_cc_element(self, html_tag_name: str, text: str, tail: str, **kwargs) -> HtmlElement:
         """构建cctitle的html. 例如：<cctitle level=1>标题1</cctitle>
 
         Args:
@@ -137,9 +115,7 @@ class BaseHTMLElementRecognizer(ABC):
         replace_element(element, cc_element)
 
     @staticmethod
-    def html_split_by_tags(
-        root: HtmlElement, split_tag_names: str | list
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    def html_split_by_tags(root: HtmlElement, split_tag_names: str | list) -> list[tuple[HtmlElement, HtmlElement]]:
         """根据split_tag_name将html分割成不同的部分.
 
         Args:
@@ -152,7 +128,7 @@ class BaseHTMLElementRecognizer(ABC):
             split_tag_names = [split_tag_names]
 
         """root is not considered"""
-        path: List[HtmlElement] = []
+        path: list[HtmlElement] = []
 
         def __is_element_text_empty(element):
             """"""
@@ -170,19 +146,17 @@ class BaseHTMLElementRecognizer(ABC):
             return True
 
         def __rebuild_empty_parent_nodes_path():
-            """rebuild path with only tag & attrib."""
+            """Rebuild path with only tag & attrib."""
             for i in range(len(path)):
                 elem = path[i]
                 attrib = elem.attrib if copy_attri else {}
-                copied = BaseHTMLElementRecognizer.HTML_PARSER.makeelement(
-                    elem.tag, attrib
-                )
+                copied = BaseHTMLElementRecognizer.HTML_PARSER.makeelement(elem.tag, attrib)
                 if i > 0:
                     path[i - 1].append(copied)
                 path[i] = copied
 
         def __copy_tree(elem: HtmlElement, copy_attr=False):
-            """deep copy w/o root's tail."""
+            """Deep copy w/o root's tail."""
             attrib = elem.attrib if copy_attr else {}
             copied = BaseHTMLElementRecognizer.HTML_PARSER.makeelement(elem.tag, attrib)
             copied.text = elem.text
@@ -316,8 +290,4 @@ class BaseHTMLElementRecognizer(ABC):
             CCTag.CC_TEXT,
             CCTag.CC_TITLE,
         ]
-        return (
-            hasattr(el, "tag")
-            and isinstance(el.tag, str)
-            and el.tag in default_tag_names
-        )
+        return hasattr(el, "tag") and isinstance(el.tag, str) and el.tag in default_tag_names

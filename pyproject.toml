@@ -17,33 +17,34 @@ members = [
 [tool.uv.sources]
 webpage_converter = { workspace = true }
 
-[dependency-groups]
-dev = [
-    "pytest>=9.0.2",
-]
-
 [[tool.uv.index]]
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-default = true
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 
 [tool.ruff]
+# 最大行长度
+line-length = 320
+
+[tool.ruff.lint]
 # 选择要启用的规则集
 select = [
     "E", # pycodestyle 错误
     "W", # pycodestyle 警告
     "F", # Pyflakes
     "I", # isort (导入排序)
-    "UP", # pyupgrade (保持代码现代化)
-    # "PL", # Pylint 规则（按需开启）
+#    "UP", # pyupgrade (保持代码现代化)
+#     "PL", # Pylint 规则（按需开启）
 ]
 
 # 忽略的规则，继承原 flake8 配置的部分忽略项
 ignore = [
-    "E131", "E125", "W503", "W504", "E203", "E231", "E702", "E128", "E402", "W604"
+    "E701", # 同一行多个语句（E702 也包含在内）
+    "E402", # 模块级导入不在文件顶部（通常需要在特定文件忽略）
+    "F841",
+    "F821",
+    "E501",
+    "W293"
 ]
-
-# 最大行长度
-line-length = 2200
 
 [tool.ruff.format]
 # 格式化相关的配置，Ruff 的格式化器兼容 Black 的风格

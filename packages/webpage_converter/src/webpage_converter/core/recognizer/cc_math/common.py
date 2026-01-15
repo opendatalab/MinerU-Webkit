@@ -2,7 +2,6 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import List, Tuple
 
 from lxml import etree
 
@@ -15,6 +14,7 @@ py_asciimath_logger.setLevel(logging.ERROR)
 py_asciimath_logger.disabled = True
 
 from py_asciimath.translator.translator import ASCIIMath2Tex
+
 from webpage_converter.core.base_recognizer import CCTag
 from webpage_converter.schemas.doc_element_type import DocElementType
 from webpage_converter.utils.html_utils import (
@@ -348,7 +348,7 @@ class CCMATH:
         parsed = asciimath2tex.translate(s)
         return parsed
 
-    def get_equation_type(self, html: str) -> List[Tuple[str, str]]:
+    def get_equation_type(self, html: str) -> list[tuple[str, str]]:
         """根据latex_config判断数学公式是行内还是行间公式.
 
         Args:
@@ -373,12 +373,8 @@ class CCMATH:
                 escaped_end = re.escape(end)
                 if end == "$":
                     escaped_end = r"(?<!\$)" + escaped_end + r"(?!\$)"
-                all_pattern = f"^{escaped_start}.*?{escaped_end}$".replace(
-                    r"\.\*\?", ".*?"
-                )
-                partial_pattern = f"{escaped_start}.*?{escaped_end}".replace(
-                    r"\.\*\?", ".*?"
-                )
+                all_pattern = f"^{escaped_start}.*?{escaped_end}$".replace(r"\.\*\?", ".*?")
+                partial_pattern = f"{escaped_start}.*?{escaped_end}".replace(r"\.\*\?", ".*?")
                 if re.search(all_pattern, s, re.DOTALL):
                     return MathMatchRes.ALLMATCH
                 if re.search(partial_pattern, s, re.DOTALL):
@@ -406,38 +402,20 @@ class CCMATH:
             # 再检查latex
             if text := text_strip(node.text):
                 # 优先检查行间公式
-                if (
-                    check_delimiters(latex_config[MATH_TYPE_PATTERN.DISPLAYMATH], text)
-                    != MathMatchRes.NOMATCH
-                ):
+                if check_delimiters(latex_config[MATH_TYPE_PATTERN.DISPLAYMATH], text) != MathMatchRes.NOMATCH:
                     result.append((EQUATION_INTERLINE, MathType.LATEX))
-                if (
-                    check_delimiters(latex_config[MATH_TYPE_PATTERN.INLINEMATH], text)
-                    != MathMatchRes.NOMATCH
-                ):
+                if check_delimiters(latex_config[MATH_TYPE_PATTERN.INLINEMATH], text) != MathMatchRes.NOMATCH:
                     result.append((EQUATION_INLINE, MathType.LATEX))
 
                 # 再检查asciimath，通常被包含在`...`中，TODO：先只支持行间公式
-                if (
-                    check_delimiters(
-                        asciiMath_config[MATH_TYPE_PATTERN.DISPLAYMATH], text
-                    )
-                    == MathMatchRes.ALLMATCH
-                ):
+                if check_delimiters(asciiMath_config[MATH_TYPE_PATTERN.DISPLAYMATH], text) == MathMatchRes.ALLMATCH:
                     result.append((EQUATION_INTERLINE, MathType.ASCIIMATH))
-                if (
-                    check_delimiters(
-                        asciiMath_config[MATH_TYPE_PATTERN.DISPLAYMATH], text
-                    )
-                    == MathMatchRes.PARTIALMATCH
-                ):
+                if check_delimiters(asciiMath_config[MATH_TYPE_PATTERN.DISPLAYMATH], text) == MathMatchRes.PARTIALMATCH:
                     result.append((EQUATION_INLINE, MathType.ASCIIMATH))
 
             # 检查script标签
             script_elements = tree.xpath("//script")
-            if script_elements and any(
-                text_strip(elem.text) for elem in script_elements
-            ):
+            if script_elements and any(text_strip(elem.text) for elem in script_elements):
                 # 判断type属性，如有包含 mode=display 则认为是行间公式
                 for script in script_elements:
                     if "mode=display" in script.get("type", ""):
@@ -448,9 +426,7 @@ class CCMATH:
             # 检查 HTML 数学标记（sub 和 sup）
             sub_elements = tree.xpath("//sub")
             sup_elements = tree.xpath("//sup")
-            if (
-                sub_elements and any(text_strip(elem.text) for elem in sub_elements)
-            ) or (sup_elements and any(text_strip(elem.text) for elem in sup_elements)):
+            if (sub_elements and any(text_strip(elem.text) for elem in sub_elements)) or (sup_elements and any(text_strip(elem.text) for elem in sup_elements)):
                 result.append((EQUATION_INLINE, MathType.HTMLMATH))
 
             # 检查当前节点是否是katex元素（CSDN）
@@ -462,9 +438,7 @@ class CCMATH:
                     result.append((EQUATION_INTERLINE, MathType.LATEX))
         return self.equation_type_to_tag(result)
 
-    def equation_type_to_tag(
-        self, type_math_type: List[Tuple[str, str]]
-    ) -> List[Tuple[str, str]]:
+    def equation_type_to_tag(self, type_math_type: list[tuple[str, str]]) -> list[tuple[str, str]]:
         return list(
             {
                 (eq_type, math_type): (
@@ -478,9 +452,7 @@ class CCMATH:
 
     def mml_to_latex(self, mml_code):
         # Remove any attributes from the math tag
-        mml_ns = re.sub(
-            r"<math.*?>", '<math xmlns="http://www.w3.org/1998/Math/MathML">', mml_code
-        )
+        mml_ns = re.sub(r"<math.*?>", '<math xmlns="http://www.w3.org/1998/Math/MathML">', mml_code)
         # mml_ns = mml_code
         mml_ns = mml_ns.replace("&quot;", '"')
         mml_ns = mml_ns.replace("'\\\"", '"').replace("\\\"'", '"')
@@ -556,27 +528,15 @@ class CCMATH:
 if __name__ == "__main__":
     cm = CCMATH()
     print(cm.get_equation_type("<span>$$a^2 + b^2 = c^2$$</span>"))
-    print(
-        cm.get_equation_type(
-            '<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi>a</mi><mo>&#x2260;</mo><mn>0</mn></math>'
-        )
-    )
-    print(
-        cm.get_equation_type(
-            '<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>a</mi><mo>&#x2260;</mo><mn>0</mn></math>'
-        )
-    )
+    print(cm.get_equation_type('<math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi>a</mi><mo>&#x2260;</mo><mn>0</mn></math>'))
+    print(cm.get_equation_type('<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>a</mi><mo>&#x2260;</mo><mn>0</mn></math>'))
     print(cm.get_equation_type("<p>这是p的text</p>"))
     # print(cm.get_equation_type(r'<p>[tex]\frac{1}{4} Log(x-1)=Log((x-1)^{1\over{4}})= Log(\sqrt[4]{x-1})[/tex]</p>'))
     # print(cm.get_equation_type(r'<p>abc [itex]x^2[/itex] abc</p>'))
     # print(cm.get_equation_type(r'<p>abc [itex]x^2 abc</p>'))
     print(cm.get_equation_type(r"<p>\begin{align} a^2+b=c\end{align}</p>"))
     print(cm.get_equation_type(r"<p>\begin{abc} a^2+b=c\end{abc}</p>"))
-    print(
-        cm.wrap_math_md(
-            r"{\displaystyle \operatorname {Var} (X)=\operatorname {E} \left[(X-\mu)^{2}\right].}"
-        )
-    )
+    print(cm.wrap_math_md(r"{\displaystyle \operatorname {Var} (X)=\operatorname {E} \left[(X-\mu)^{2}\right].}"))
     print(cm.wrap_math_md(r"$$a^2 + b^2 = c^2$$"))
     print(cm.wrap_math_md(r"\(a^2 + b^2 = c^2\)"))
     print(cm.extract_asciimath("x=(-b +- sqrt(b^2 - 4ac))/(2a)"))
@@ -605,9 +565,7 @@ if __name__ == "__main__":
             "ccmath-interline",
             "asciimath",
             "",
-            html_to_element(
-                r"<p>A `3xx3` matrix,`((1,2,3),(4,5,6),(7,8,9))`, and a `2xx1` matrix, or vector, `((1),(0))`.</p>"
-            ),
+            html_to_element(r"<p>A `3xx3` matrix,`((1,2,3),(4,5,6),(7,8,9))`, and a `2xx1` matrix, or vector, `((1),(0))`.</p>"),
             None,
             True,
         )

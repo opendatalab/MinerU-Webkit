@@ -1,16 +1,14 @@
-import uvicorn
 import httpx
-from ext import app
+import uvicorn
 from configs import app_config
+from ext import app
 from fastapi_mcp import FastApiMCP
 from utils.logging import setup_logging
 
 mcp = FastApiMCP(
     app,
     include_operations=["html_content_parse"],
-    http_client=httpx.AsyncClient(
-        base_url=f"http://{app_config.host}:{app_config.port}", timeout=20
-    ),
+    http_client=httpx.AsyncClient(base_url=f"http://{app_config.host}:{app_config.port}", timeout=20),
 )
 mcp.mount_http()
 

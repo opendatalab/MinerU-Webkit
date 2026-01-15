@@ -1,9 +1,10 @@
-from typing import List, Tuple
 from urllib.parse import urlparse
+
 from lxml.html import HtmlElement
 from overrides import override
-from .code import classes, rules, tag_code, tag_pre, tag_pre_code
+
 from ..base_recognizer import BaseHTMLElementRecognizer, CCTag
+from .code import classes, rules, tag_code, tag_pre, tag_pre_code
 
 
 class CodeRecognizer(BaseHTMLElementRecognizer):
@@ -22,10 +23,10 @@ class CodeRecognizer(BaseHTMLElementRecognizer):
     def recognize(
         self,
         base_url: str,
-        main_html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        main_html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
         language: str = "en",
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """父类，解析代码元素.
 
         Args:
@@ -37,7 +38,7 @@ class CodeRecognizer(BaseHTMLElementRecognizer):
         """
         domain = urlparse(base_url).hostname
 
-        rtn: List[Tuple[HtmlElement, HtmlElement]] = []
+        rtn: list[tuple[HtmlElement, HtmlElement]] = []
         for root, root_raw_html in main_html_lst:
             if self.is_cc_html(root):
                 rtn.append((root, root_raw_html))
@@ -79,15 +80,11 @@ class CodeRecognizer(BaseHTMLElementRecognizer):
                 break
 
             CodeRecognizer.remove_empty_code(root)
-            rtn.extend(
-                BaseHTMLElementRecognizer.html_split_by_tags(root, CCTag.CC_CODE)
-            )
+            rtn.extend(BaseHTMLElementRecognizer.html_split_by_tags(root, CCTag.CC_CODE))
         return rtn
 
     @override
-    def to_content_list_node(
-        self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str
-    ) -> dict:
+    def to_content_list_node(self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str) -> dict:
         """把代码元素转换为content list node. 注意：此方法只处理块级代码(CC_CODE)，行内代码(CC_CODE_INLIN
         E)由TextParagraphRecognizer处理.
 

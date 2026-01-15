@@ -1,4 +1,5 @@
 import json
+
 from ..schemas.datajson import ContentList
 from ..schemas.doc_element_type import DocElementType
 

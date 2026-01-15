@@ -24,18 +24,19 @@ repos:
         exclude: '^tests/.*/assets/|\.ipynb$'
   # 使用 Ruff 替代 flake8 和 isort
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.0  # 使用最新版本
+    rev: v0.14.11
     hooks:
       # 代码检查（Linting），并自动修复可修复的问题
       - id: ruff-check
-        args: [ --fix, --exit-non-zero-on-fix ]
+        args: [ --fix ]
         # 排除不需要检查的文件
         exclude: '^tests/.*/assets/'
       # 代码格式化
       - id: ruff-format
+        exclude: '^tests/.*/assets/'
   # Markdown 格式化工具
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.9
+    rev: 0.7.18
     hooks:
       - id: mdformat
         args: [ "--number", "--table-width", "200" ]
@@ -45,11 +46,13 @@ repos:
           - linkify-it-py
         exclude: '^tests/.*/assets/'
   # 文档字符串格式化工具
-  - repo: https://github.com/myint/docformatter
-    rev: v1.3.1
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.7
     hooks:
       - id: docformatter
-        args: [ "--in-place", "--wrap-descriptions", "119" ]
+        additional_dependencies: [ tomli ]
+        args: [ --in-place ]
+        exclude: '^tests/.*/assets/'
   - repo: local
     hooks:
       - id: clear-jupyter-notebook-output
@@ -58,3 +61,4 @@ repos:
         language: system
         files: \.ipynb$
         types: [ file ]
+        exclude: '^tests/.*/assets/'

@@ -1,6 +1,8 @@
 from abc import abstractmethod
-from typing import Any, Dict
+from typing import Any
+
 from lxml.html import HtmlElement
+
 from webpage_converter.exception.exception import (
     HtmlMathMathjaxRenderRecognizerException,
 )
@@ -12,9 +14,7 @@ class MathRenderType:
 
     MATHJAX = "mathjax"
     MATHJAX_MOCK = "mathjax_mock"  # 虚拟的mathjax渲染器
-    MATHJAX_CUSTOMIZED = (
-        "mathjax_customized"  # 临时增加这个type，未来区分走自定义解析的数据
-    )
+    MATHJAX_CUSTOMIZED = "mathjax_customized"  # 临时增加这个type，未来区分走自定义解析的数据
     KATEX = "katex"
 
 
@@ -36,7 +36,7 @@ class BaseMathRender:
         return self.render_type
 
     @abstractmethod
-    def get_options(self, html: str) -> Dict[str, Any]:
+    def get_options(self, html: str) -> dict[str, Any]:
         """从HTML中提取渲染器选项.
 
         Args:
@@ -110,10 +110,7 @@ class BaseMathRender:
                         katex_detected = True
                         break
                     # 检查脚本内容
-                    if script.text and (
-                        "katex" in script.text.lower()
-                        or "rendermathinelem" in script.text.lower()
-                    ):
+                    if script.text and ("katex" in script.text.lower() or "rendermathinelem" in script.text.lower()):
                         katex_detected = True
                         break
 
@@ -130,9 +127,7 @@ class BaseMathRender:
                     mathjax_detected = True
                     break
                 # 检查脚本内容
-                if script.text and (
-                    "mathjax" in script.text.lower() or "tex2jax" in script.text.lower()
-                ):
+                if script.text and ("mathjax" in script.text.lower() or "tex2jax" in script.text.lower()):
                     mathjax_detected = True
                     break
 
@@ -145,9 +140,7 @@ class BaseMathRender:
 
         except Exception as e:
             # 记录异常，但不抛出
-            raise HtmlMathMathjaxRenderRecognizerException(
-                f"获取数学公式渲染器失败: {e}"
-            )
+            raise HtmlMathMathjaxRenderRecognizerException(f"获取数学公式渲染器失败: {e}")
 
     @staticmethod
     def detect_render_type(tree: HtmlElement) -> str:

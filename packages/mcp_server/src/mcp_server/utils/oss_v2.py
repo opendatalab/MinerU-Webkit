@@ -1,22 +1,22 @@
-import time
-import traceback
-import alibabacloud_oss_v2 as oss
 import os
-import uuid
-import requests
+import signal
 import sys
 import threading
-import signal
-from datetime import datetime
-from pathlib import Path
-from functools import lru_cache
-from urllib.parse import urljoin, urlparse
-from configs import oss_config
+import time
+import traceback
+import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Optional
-from requests.exceptions import RequestException, HTTPError, Timeout, ConnectTimeout, ReadTimeout
-from utils.compress import compress_directory_to_zip
+from datetime import datetime
+from functools import lru_cache
+from pathlib import Path
+from urllib.parse import urljoin, urlparse
+
+import alibabacloud_oss_v2 as oss
+import requests
+from configs import oss_config
 from loguru import logger
+from requests.exceptions import ConnectTimeout, HTTPError, ReadTimeout, RequestException, Timeout
+from utils.compress import compress_directory_to_zip
 
 OBJECT_ACL_DEFAULT = "default"
 OBJECT_ACL_PRIVATE = "private"
@@ -24,17 +24,13 @@ OBJECT_ACL_PUBLIC_READ = "public-read"
 OBJECT_ACL_PUBLIC_READ_WRITE = "public-read-write"
 
 
-@lru_cache()
+@lru_cache
 def get_oss_client():
     def get_credentials_wrapper():
         # 返回长期凭证
-        return oss.credentials.Credentials(
-            access_key_id=oss_config.ak, access_key_secret=oss_config.sk
-        )
+        return oss.credentials.Credentials(access_key_id=oss_config.ak, access_key_secret=oss_config.sk)
 
-    credentials_provider = oss.credentials.CredentialsProviderFunc(
-        func=get_credentials_wrapper
-    )
+    credentials_provider = oss.credentials.CredentialsProviderFunc(func=get_credentials_wrapper)
     # 加载SDK的默认配置，并设置凭证提供者
     cfg = oss.config.load_default()
     cfg.credentials_provider = credentials_provider
@@ -60,7 +56,7 @@ oss_client = get_oss_client()
 
 
 class UploadTask:
-    """上传任务类"""
+    """上传任务类."""
 
     def __init__(
         self,
@@ -80,18 +76,9 @@ class UploadTask:
 
 
 class UploadResult:
-    """上传结果类"""
+    """上传结果类."""
 
-    def __init__(
-        self,
-        file_id: str,
-        file_url: str,
-        url: str,
-        success: bool = False,
-        size: int = 0,
-        error_code: Optional[int] = None,
-        error: Optional[str] = None
-    ):
+    def __init__(self, file_id: str, file_url: str, url: str, success: bool = False, size: int = 0, error_code: int | None = None, error: str | None = None):
         self.file_id = file_id
         self.file_url = file_url
         self.url = url
@@ -101,12 +88,12 @@ class UploadResult:
         self.error = error
 
     def to_dict(self):
-        """将实例转换为字典"""
+        """将实例转换为字典."""
         return self.__dict__.copy()
 
 
 class BatchUploader:
-    """批量上传器"""
+    """批量上传器."""
 
     def __init__(self, client: oss.Client, bucket: str, max_workers: int = 5):
         self.client = client
@@ -114,10 +101,8 @@ class BatchUploader:
         self.max_workers = max_workers
         self.stop_thread_event = threading.Event()
 
-    def list_objects(
-        self, file_url_list=None, max_keys: int = 1000
-    ) -> List[UploadTask]:
-        """列举待上传的所有对象"""
+    def list_objects(self, file_url_list=None, max_keys: int = 1000) -> list[UploadTask]:
+        """列举待上传的所有对象."""
         if file_url_list is None:
             file_url_list = []
         tasks = []
@@ -144,17 +129,13 @@ class BatchUploader:
         return tasks
 
     def upload_file(self, task: UploadTask, local_dir: str):
-        """
-        上传文件
-            file
-        :param task:
+        """上传文件 file :param task:
+
         :param local_dir:
         :return:
         """
         start_time = time.time()
-        result = UploadResult(
-            file_id=task.file_id, file_url=task.file_url, url=task.url, size=task.size
-        )
+        result = UploadResult(file_id=task.file_id, file_url=task.file_url, url=task.url, size=task.size)
         compress = task.compress
 
         try:
@@ -163,9 +144,7 @@ class BatchUploader:
             today = datetime.now().strftime("%Y-%m-%d")
             if compress:
                 full_local_path = Path(local_dir) / f"{file_id}.zip"
-                zip_archive_success = compress_directory_to_zip(
-                    result_dir, full_local_path
-                )
+                zip_archive_success = compress_directory_to_zip(result_dir, full_local_path)
                 if zip_archive_success == 0:
                     logger.info("压缩成功")
                 else:
@@ -175,7 +154,7 @@ class BatchUploader:
                 file_name = Path(task.local_path).stem
                 # full_local_path = Path(result_dir) / f"{file_name}.md"
                 # obj_key = f"{oss_config.root_path}/{today}/{file_id}/{file_name}.md"
-                full_local_path = Path(result_dir) / f"book.html"
+                full_local_path = Path(result_dir) / "book.html"
                 obj_key = f"{oss_config.root_path}/{today}/{file_id}/book.html"
 
             _resp = oss_client.put_object_from_file(
@@ -206,7 +185,7 @@ class BatchUploader:
             result.success = True
             result.zip_url = zip_without_params
             result.date = _resp.headers["date"]
-        except Exception as e:
+        except Exception:
             result.success = False
             result.error_code = 40001
             result.error = traceback.format_exc()
@@ -217,8 +196,8 @@ class BatchUploader:
 
         return result
 
-    def batch_upload(self, tasks: List[UploadTask], local_dir: str):
-        """执行批量上传"""
+    def batch_upload(self, tasks: list[UploadTask], local_dir: str):
+        """执行批量上传."""
         results = []
         completed = 0
         total = len(tasks)
@@ -227,10 +206,7 @@ class BatchUploader:
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             # 提交所有下载任务
-            future_to_task = {
-                executor.submit(self.upload_file, task, local_dir): task
-                for task in tasks
-            }
+            future_to_task = {executor.submit(self.upload_file, task, local_dir): task for task in tasks}
 
             # 处理完成的任务
             for future in as_completed(future_to_task):
@@ -243,19 +219,15 @@ class BatchUploader:
 
                     # 显示进度
                     if result.success:
-                        logger.info(
-                            f"✓ [{completed}/{total} 上传文件] {task.file_url} ({format_bytes(result.size)})"
-                        )
+                        logger.info(f"✓ [{completed}/{total} 上传文件] {task.file_url} ({format_bytes(result.size)})")
                     else:
-                        logger.error(
-                            f"✗ [{completed}/{total} 上传文件] {task.file_url} - 错误: {result.error}"
-                        )
+                        logger.error(f"✗ [{completed}/{total} 上传文件] {task.file_url} - 错误: {result.error}")
                         result.error = "上传文件失败"
 
                     results.append(result.to_dict())
                     completed += 1
 
-                except Exception as e:
+                except Exception:
                     result = UploadResult(
                         file_id=task.file_id,
                         file_url=task.file_url,
@@ -265,20 +237,18 @@ class BatchUploader:
                     )
                     results.append(result.to_dict())
                     completed += 1
-                    logger.error(
-                        f"✗ [{completed}/{total} 上传文件] {task.file_url} - 异常: {traceback.format_exc()}"
-                    )
+                    logger.error(f"✗ [{completed}/{total} 上传文件] {task.file_url} - 异常: {traceback.format_exc()}")
 
         return results
 
     def stop(self):
-        """停止上传"""
+        """停止上传."""
         self.stop_thread_event.set()
         logger.info("\n正在停止上传...")
 
 
 class DownloadTask:
-    """下载任务类"""
+    """下载任务类."""
 
     def __init__(self, file_id: str, file_url: str, url: str, local_path: str, size: int):
         self.file_id = file_id
@@ -289,18 +259,9 @@ class DownloadTask:
 
 
 class DownloadResult:
-    """下载结果类"""
+    """下载结果类."""
 
-    def __init__(
-        self,
-        file_id: str,
-        file_url: str,
-        url: str,
-        success: bool = False,
-        size: int = 0,
-        error_code: Optional[int] = None,
-        error: Optional[str] = None
-    ):
+    def __init__(self, file_id: str, file_url: str, url: str, success: bool = False, size: int = 0, error_code: int | None = None, error: str | None = None):
         self.file_id = file_id
         self.file_url = file_url
         self.url = url
@@ -310,12 +271,12 @@ class DownloadResult:
         self.error = error
 
     def to_dict(self):
-        """将实例转换为字典"""
+        """将实例转换为字典."""
         return self.__dict__.copy()
 
 
 class BatchDownloader:
-    """批量下载器"""
+    """批量下载器."""
 
     def __init__(self, client: oss.Client, bucket: str, max_workers: int = 5):
         self.client = client
@@ -323,10 +284,8 @@ class BatchDownloader:
         self.max_workers = max_workers
         self.stop_thread_event = threading.Event()
 
-    def list_objects(
-        self, file_url_list=None, max_keys: int = 1000
-    ) -> List[DownloadTask]:
-        """列举待下载的所有对象"""
+    def list_objects(self, file_url_list=None, max_keys: int = 1000) -> list[DownloadTask]:
+        """列举待下载的所有对象."""
         if file_url_list is None:
             file_url_list = []
         tasks = []
@@ -348,9 +307,7 @@ class BatchDownloader:
                     if not _index:
                         _index = str(uuid.uuid4())
                     relative_path = f"{str(_index)}/{str(_index)}{file_name}"
-                    _download_task = DownloadTask(
-                        file_id=_index, file_url=file_url, url=_url, local_path=relative_path, size=0
-                    )
+                    _download_task = DownloadTask(file_id=_index, file_url=file_url, url=_url, local_path=relative_path, size=0)
                     tasks.append(_download_task)
                 break
             except Exception as e:
@@ -358,14 +315,10 @@ class BatchDownloader:
 
         return tasks
 
-    def download_file(
-        self, task: DownloadTask, local_dir: str, stream: bool, encoding: str
-    ) -> DownloadResult:
-        """下载单个文件"""
+    def download_file(self, task: DownloadTask, local_dir: str, stream: bool, encoding: str) -> DownloadResult:
+        """下载单个文件."""
         start_time = time.time()
-        result = DownloadResult(
-            file_id=task.file_id, file_url=task.file_url, url=task.url, size=task.size
-        )
+        result = DownloadResult(file_id=task.file_id, file_url=task.file_url, url=task.url, size=task.size)
 
         # 计算完整的本地文件路径
         full_local_path = os.path.join(local_dir, task.local_path)
@@ -384,7 +337,7 @@ class BatchDownloader:
 
         try:
             parsed_url = urlparse(result.file_url)
-            hostname_parts = parsed_url.hostname.split('.')
+            hostname_parts = parsed_url.hostname.split(".")
             if len(hostname_parts) < 4:
                 with requests.get(result.file_url, stream=stream, timeout=(1.0, 2.0)) as resp:
                     resp.raise_for_status()  # 自动检查状态码
@@ -405,19 +358,16 @@ class BatchDownloader:
                             f.write(resp.content)
                             result.html = content.decode(encoding)
             else:
-                object_key = parsed_url.path.lstrip('/')
+                object_key = parsed_url.path.lstrip("/")
                 # 创建下载请求
-                get_request = oss.GetObjectRequest(
-                    bucket=oss_config.bucket,
-                    key=object_key
-                )
+                get_request = oss.GetObjectRequest(bucket=oss_config.bucket, key=object_key)
 
                 # 执行下载
                 resp = self.client.get_object(get_request)
 
                 if stream:
                     # 保存文件
-                    with open(full_local_path, 'wb') as f:
+                    with open(full_local_path, "wb") as f:
                         content_bytes = bytearray()
                         with resp.body as body_stream:
                             # 分块读取并写入
@@ -465,12 +415,12 @@ class BatchDownloader:
 
     def batch_download(
         self,
-        tasks: List[DownloadTask],
+        tasks: list[DownloadTask],
         local_dir: str,
         stream: bool = False,
         encoding: str = "utf-8",
-    ) -> List[DownloadResult]:
-        """执行批量下载"""
+    ) -> list[DownloadResult]:
+        """执行批量下载."""
         results = []
         completed = 0
         total = len(tasks)
@@ -479,12 +429,7 @@ class BatchDownloader:
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             # 提交所有下载任务
-            future_to_task = {
-                executor.submit(
-                    self.download_file, task, local_dir, stream, encoding
-                ): task
-                for task in tasks
-            }
+            future_to_task = {executor.submit(self.download_file, task, local_dir, stream, encoding): task for task in tasks}
 
             # 处理完成的任务
             for future in as_completed(future_to_task):
@@ -497,42 +442,30 @@ class BatchDownloader:
 
                     # 显示进度
                     if result.success:
-                        logger.info(
-                            f"✓ [{completed}/{total} 下载文件] {result.file_url} ({format_bytes(result.size)})"
-                        )
+                        logger.info(f"✓ [{completed}/{total} 下载文件] {result.file_url} ({format_bytes(result.size)})")
                     else:
-                        logger.error(
-                            f"✗ [{completed}/{total} 下载文件] {result.file_url} - 错误: {result.error}"
-                        )
+                        logger.error(f"✗ [{completed}/{total} 下载文件] {result.file_url} - 错误: {result.error}")
                         result.error = result.error.split("：")[0]
 
                     results.append(result.to_dict())
                     completed += 1
 
-                except Exception as e:
-                    result = DownloadResult(
-                        file_id=task.file_id,
-                        file_url=task.file_url,
-                        url=task.url,
-                        error_code=10007,
-                        error="下载文件发生未知错误)"
-                    )
+                except Exception:
+                    result = DownloadResult(file_id=task.file_id, file_url=task.file_url, url=task.url, error_code=10007, error="下载文件发生未知错误)")
                     results.append(result.to_dict())
                     completed += 1
-                    logger.error(
-                        f"✗ [{completed}/{total} 下载文件] {task.file_url} - 异常: {traceback.format_exc()}"
-                    )
+                    logger.error(f"✗ [{completed}/{total} 下载文件] {task.file_url} - 异常: {traceback.format_exc()}")
 
         return results
 
     def stop(self):
-        """停止下载"""
+        """停止下载."""
         self.stop_thread_event.set()
         logger.info("\n正在停止下载...")
 
 
 def format_bytes(bytes_size: int) -> str:
-    """格式化字节数为可读格式"""
+    """格式化字节数为可读格式."""
     for unit in ["B", "KB", "MB", "GB", "TB"]:
         if bytes_size < 1024.0:
             return f"{bytes_size:.1f} {unit}"
@@ -541,7 +474,7 @@ def format_bytes(bytes_size: int) -> str:
 
 
 def signal_handler(signum, frame):
-    """信号处理器"""
+    """信号处理器."""
     logger.info(f"\n接收到信号 {signum}，正在停止...")
     if hasattr(signal_handler, "downloader"):
         signal_handler.downloader.stop()

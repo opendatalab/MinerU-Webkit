@@ -1,21 +1,22 @@
-from typing import List, Tuple
 from lxml.html import HtmlElement
 from overrides import override
-from ..exception.exception import HtmlFileExtractorException
+
+from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer, CCTag
+from webpage_converter.schemas.datajson import ContentList, DataJson
+from webpage_converter.schemas.doc_element_type import DocElementType
+from webpage_converter.utils.html_utils import element_to_html, html_to_element
+
 from ..abstracts.converter_abstract import BaseFileFormatConverter
+from ..exception.exception import HtmlFileExtractorException
 from .recognizer.audio import AudioRecognizer
 from .recognizer.cccode import CodeRecognizer
 from .recognizer.ccmath import MathRecognizer
 from .recognizer.image import ImageRecognizer
 from .recognizer.list import ListRecognizer
-from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer, CCTag
 from .recognizer.table import TableRecognizer
 from .recognizer.text import TextParagraphRecognizer
 from .recognizer.title import TitleRecognizer
 from .recognizer.video import VideoRecognizer
-from webpage_converter.schemas.datajson import ContentList, DataJson
-from webpage_converter.schemas.doc_element_type import DocElementType
-from webpage_converter.utils.html_utils import element_to_html, html_to_element
 
 
 class HTMLPageLayoutType:
@@ -44,9 +45,7 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
         self.__table_recognizer: BaseHTMLElementRecognizer = TableRecognizer()
         self.__list_recognizer: BaseHTMLElementRecognizer = ListRecognizer()
         self.__title_recognizer: BaseHTMLElementRecognizer = TitleRecognizer()
-        self.__paragraph_recognizer: BaseHTMLElementRecognizer = (
-            TextParagraphRecognizer()
-        )
+        self.__paragraph_recognizer: BaseHTMLElementRecognizer = TextParagraphRecognizer()
 
         self.__to_content_list_mapper = {
             CCTag.CC_CODE: self.__code_recognizer,
@@ -103,9 +102,7 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
         ]:
             parsed_html = extract_func(base_url, parsed_html, raw_html, language)
 
-        content_list: ContentList = self._export_to_content_list(
-            base_url, parsed_html, raw_html
-        )
+        content_list: ContentList = self._export_to_content_list(base_url, parsed_html, raw_html)
         data_json["content_list"] = content_list
         # data_json['title'] = title
         return data_json
@@ -129,10 +126,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_code(
         self,
         base_url: str,
-        html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """从html文本中提取代码.
 
         Args:
@@ -148,10 +145,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_math(
         self,
         base_url: str,
-        html_lst: List[Tuple[str, str]],
+        html_lst: list[tuple[str, str]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """从html文本中提取数学公式.
 
         Args:
@@ -168,10 +165,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_image(
         self,
         base_url: str,
-        html_lst: List[Tuple[str, str]],
+        html_lst: list[tuple[str, str]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """从html文本中提取图片.
 
         Args:
@@ -188,10 +185,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_audio(
         self,
         base_url: str,
-        html_lst: List[Tuple[str, str]],
+        html_lst: list[tuple[str, str]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """从html文本中提取音频.
 
         Args:
@@ -208,10 +205,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_video(
         self,
         base_url: str,
-        html_lst: List[Tuple[str, str]],
+        html_lst: list[tuple[str, str]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """从html文本中提取视频.
 
         Args:
@@ -228,10 +225,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_table(
         self,
         base_url: str,
-        html_lst: List[Tuple[str, str]],
+        html_lst: list[tuple[str, str]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """从html文本中提取表格.
 
         Args:
@@ -248,10 +245,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_list(
         self,
         base_url: str,
-        html_lst: List[Tuple[str, str]],
+        html_lst: list[tuple[str, str]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """从html文本中提取列表.
 
         Args:
@@ -268,10 +265,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_title(
         self,
         base_url: str,
-        html_lst: List[Tuple[str, str]],
+        html_lst: list[tuple[str, str]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """从html文本中提取标题.
 
         Args:
@@ -288,10 +285,10 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
     def _extract_paragraph(
         self,
         base_url: str,
-        html_lst: List[Tuple[str, str]],
+        html_lst: list[tuple[str, str]],
         raw_html: str,
         language: str,
-    ) -> List[Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         """从html文本中提取段落.
 
         Args:
@@ -302,9 +299,7 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
         Returns:
         """
 
-        lst = self.__paragraph_recognizer.recognize(
-            base_url, html_lst, raw_html, language
-        )
+        lst = self.__paragraph_recognizer.recognize(base_url, html_lst, raw_html, language)
         return lst
 
     def __is_valid_node(self, node: dict) -> bool:
@@ -345,19 +340,13 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
                     if item.get("c"):
                         if isinstance(item["c"], str) and item["c"].strip():
                             has_content = True
-                        elif isinstance(item["c"], list) and any(
-                            bool(c_item) for c_item in item["c"]
-                        ):
+                        elif isinstance(item["c"], list) and any(bool(c_item) for c_item in item["c"]):
                             has_content = True
 
                     # 检查child_list是否有内容
                     has_child_list = False
                     child_list = item.get("child_list", {})
-                    if (
-                        isinstance(child_list, dict)
-                        and child_list.get("item")
-                        and len(child_list.get("item", [])) > 0
-                    ):
+                    if isinstance(child_list, dict) and child_list.get("item") and len(child_list.get("item", [])) > 0:
                         has_child_list = True
 
                     # 如果c或child_list有内容，则认为是有效项
@@ -380,14 +369,9 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
         if node.get("type") == DocElementType.IMAGE:
             content = node.get("content", {})
             # 检查url、path或data字段是否至少有一个不为空
-            return bool(
-                content.get("url") or content.get("path") or content.get("data")
-            )
+            return bool(content.get("url") or content.get("path") or content.get("data"))
         # 检测table类型的节点
-        if (
-            node.get("type") == DocElementType.SIMPLE_TABLE
-            or node.get("type") == DocElementType.COMPLEX_TABLE
-        ):
+        if node.get("type") == DocElementType.SIMPLE_TABLE or node.get("type") == DocElementType.COMPLEX_TABLE:
             html = node.get("content", {}).get("html")
             # 如果表格的html内容为None或空字符串，则视为无效节点
             return bool(html and html.strip())
@@ -400,15 +384,13 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
         if node.get("type") == DocElementType.PARAGRAPH:
             content = node.get("content", [])
             # 检查content列表是否存在且不为空，并且至少有一个非空的内容项
-            return bool(content) and any(
-                item.get("c") and item.get("c").strip() for item in content
-            )
+            return bool(content) and any(item.get("c") and item.get("c").strip() for item in content)
         return True
 
     def _export_to_content_list(
         self,
         base_url: str,
-        html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
     ) -> ContentList:
         """将解析结果存入content_list格式中.
@@ -425,9 +407,7 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
         one_page = []
         for parsed_html, raw_html in html_lst:
             ccnode_html, cc_tag = self.__get_cc_node(parsed_html)
-            parser: BaseHTMLElementRecognizer = self.__to_content_list_mapper.get(
-                cc_tag
-            )
+            parser: BaseHTMLElementRecognizer = self.__to_content_list_mapper.get(cc_tag)
             if parser:
                 raw_html_str = element_to_html(raw_html)
                 # raw_html_str = raw_html
@@ -435,15 +415,11 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
                 if node and self.__is_valid_node(node):
                     one_page.append(node)
             else:
-                raise HtmlFileExtractorException(
-                    f"无法识别的html标签：{cc_tag}, {parsed_html}"
-                )
-        content_list = ContentList(
-            [one_page]
-        )  # 对于网页来说仅有一页，如果多页，则剩下的每个都是一个论坛的回复
+                raise HtmlFileExtractorException(f"无法识别的html标签：{cc_tag}, {parsed_html}")
+        content_list = ContentList([one_page])  # 对于网页来说仅有一页，如果多页，则剩下的每个都是一个论坛的回复
         return content_list
 
-    def __get_cc_node(self, html: HtmlElement) -> Tuple[HtmlElement, str]:
+    def __get_cc_node(self, html: HtmlElement) -> tuple[HtmlElement, str]:
         """获取html文本的根标签名。只获取一个，如果html文本中包含多个cc标签，则抛异常。
 
         Args:
@@ -458,10 +434,7 @@ class NoClipHTMLFIleFormatorConverter(BaseFileFormatConverter):
             return html, el.tag
         else:
             # 查找子节点，包括节点自己。  self::tag | .//tag 这是xpath的写法，表示查找自己和子节点中的tag标签，如果只写./tag则只查找子节点中的tag标签
-            xpath_expr = " | ".join(
-                f"self::{tag} | .//{tag}"
-                for tag in self.__to_content_list_mapper.keys()
-            )
+            xpath_expr = " | ".join(f"self::{tag} | .//{tag}" for tag in self.__to_content_list_mapper.keys())
             nodes = el.xpath(xpath_expr)
             if len(nodes) == 0:
                 raise HtmlFileExtractorException(f"html文本中没有cc标签: {html}")

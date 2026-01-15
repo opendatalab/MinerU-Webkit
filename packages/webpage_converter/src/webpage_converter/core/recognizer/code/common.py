@@ -1,6 +1,7 @@
 import re
-from typing import Optional
+
 from lxml.html import HtmlElement
+
 from webpage_converter.core.base_recognizer import CCTag
 from webpage_converter.utils.html_utils import element_to_html
 
@@ -47,7 +48,7 @@ _BLOCK_ELES = [
 ]
 
 
-def __get_lang_maybe(node: HtmlElement) -> Optional[str]:
+def __get_lang_maybe(node: HtmlElement) -> str | None:
     attrib: dict[str, str] = node.attrib
     classes: list[str] = [c for c in attrib.get("class", "").split(" ") if c]
     for c in classes:
@@ -59,7 +60,7 @@ def __get_lang_maybe(node: HtmlElement) -> Optional[str]:
 # 对 prismjs 和 highlightjs 有效
 # 但是如果没写，那没有办法
 # TODO: guesslang ?
-def __detect_language(node: HtmlElement) -> Optional[str]:
+def __detect_language(node: HtmlElement) -> str | None:
     for cnode in node.iter(None):
         assert isinstance(cnode, HtmlElement)
         if lang := __get_lang_maybe(cnode):
@@ -193,9 +194,7 @@ def get_full_text(sub_tree: HtmlElement) -> tuple[bool, str, str]:
     return sub_tree.tag in _BLOCK_ELES or is_block, t, sub_tree.tail or ""
 
 
-def replace_node_by_cccode(
-    node: HtmlElement, by: str, in_pre_tag: bool = True, inline: bool = False
-) -> None:
+def replace_node_by_cccode(node: HtmlElement, by: str, in_pre_tag: bool = True, inline: bool = False) -> None:
     """将 node 替换为 cccode 标签.
 
     Args:

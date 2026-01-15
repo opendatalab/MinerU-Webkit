@@ -2,7 +2,7 @@ from ..schemas.datajson import DataJson
 from ..schemas.file_format import FileFormatConstant
 
 
-class FileTypeMatcher(object):
+class FileTypeMatcher:
     """文件类型匹配器.
 
     Args:

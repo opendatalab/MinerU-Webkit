@@ -1,6 +1,6 @@
-from typing import List, Tuple
 from lxml.html import HtmlElement
 from overrides import override
+
 from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer
 
 
@@ -11,10 +11,10 @@ class VideoRecognizer(BaseHTMLElementRecognizer):
     def recognize(
         self,
         base_url: str,
-        main_html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        main_html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
         language: str = "en",
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """父类，解析视频元素.
 
         Args:
@@ -27,7 +27,5 @@ class VideoRecognizer(BaseHTMLElementRecognizer):
         raise NotImplementedError
 
     @override
-    def to_content_list_node(
-        self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str
-    ) -> dict:
+    def to_content_list_node(self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str) -> dict:
         raise NotImplementedError

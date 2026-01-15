@@ -1,7 +1,9 @@
 import re
-from typing import Any, Dict, List
-from .render import BaseMathRender, MathRenderType
+from typing import Any
+
 from webpage_converter.utils.html_utils import HtmlElement, html_to_element
+
+from .render import BaseMathRender, MathRenderType
 
 
 class KaTeXRender(BaseMathRender):
@@ -24,7 +26,7 @@ class KaTeXRender(BaseMathRender):
         """获取渲染器类型."""
         return self.render_type
 
-    def get_options(self, html: str) -> Dict[str, Any]:
+    def get_options(self, html: str) -> dict[str, Any]:
         """从HTML中提取KaTeX选项.
 
         Args:
@@ -77,9 +79,7 @@ class KaTeXRender(BaseMathRender):
         throw_pattern = r"throwOnError\s*:\s*(true|false)"
         throw_on_error_match = re.search(throw_pattern, config_text, re.IGNORECASE)
         if throw_on_error_match:
-            self.options["throw_on_error"] = (
-                throw_on_error_match.group(1).lower() == "true"
-            )
+            self.options["throw_on_error"] = throw_on_error_match.group(1).lower() == "true"
 
         # 提取错误颜色
         error_pattern = r'errorColor\s*:\s*[\'"](.+?)[\'"]'
@@ -94,7 +94,7 @@ class KaTeXRender(BaseMathRender):
             delimiters_str = delimiters_match.group(1)
             self.options["delimiters"] = self._parse_delimiters(delimiters_str)
 
-    def _parse_delimiters(self, delimiters_str: str) -> List[Dict[str, str]]:
+    def _parse_delimiters(self, delimiters_str: str) -> list[dict[str, str]]:
         """解析KaTeX分隔符配置.
 
         Args:

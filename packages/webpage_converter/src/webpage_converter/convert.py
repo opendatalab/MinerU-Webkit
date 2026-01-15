@@ -1,10 +1,11 @@
 import threading
 import uuid
 from datetime import datetime
-from .utils.cfg_reader import load_pipe_tpl
+
 from .convert_chain import ExtractSimpleFactory
-from .schemas.datajson import DataJson
 from .exception.exception import InvalidOutputFormatException
+from .schemas.datajson import DataJson
+from .utils.cfg_reader import load_pipe_tpl
 
 
 class PipeTpl:
@@ -85,7 +86,7 @@ def convert_html_to_structured_data(
     language: str = "en",
     use_raw_image_url: bool = True,
 ) -> str:
-    """将main_html转markdown
+    """将main_html转markdown.
 
     Args:
         url: 网页URL
@@ -114,5 +115,3 @@ def convert_html_to_structured_data(
         raise InvalidOutputFormatException(f"Invalid output format: {output_format}")
 
     return result
-
-

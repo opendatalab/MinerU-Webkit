@@ -1,21 +1,21 @@
 import unittest
 from pathlib import Path
+
 from webpage_converter.convert_chain import ExtractSimpleFactory
 from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer
 from webpage_converter.core.recognizer.text import TextParagraphRecognizer
 from webpage_converter.schemas.datajson import DataJson
 from webpage_converter.utils.cfg_reader import load_pipe_tpl
-from webpage_converter.utils.html_utils import html_to_element, element_to_html_unescaped
+from webpage_converter.utils.html_utils import element_to_html_unescaped, html_to_element
 
 core_path = Path(__file__).resolve().parent.parent
 
 
 class TestTextParagraphRecognize(unittest.TestCase):
-
     def setUp(self):
         self.text_recognize = TextParagraphRecognizer()
         # Config for HTML extraction
-        self.config = load_pipe_tpl('noclip_html_test')
+        self.config = load_pipe_tpl("noclip_html_test")
 
     def test_text_1(self):
         """
@@ -23,15 +23,11 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        with open(core_path / 'assets/html/text.html', 'r') as file:
+        with open(core_path / "assets/html/text.html") as file:
             html_content = file.read()
-        assert self.text_recognize._TextParagraphRecognizer__combine_text('知识乱象\n',
-                                                                          '中共中央政治局召开会议审议《成-2020年10月16日新闻联播',
-                                                                          'zh') == '知识乱象\n中共中央政治局召开会议审议《成-2020年10月16日新闻联播'
-        result = self.text_recognize.recognize('http://www.baidu.com',
-                                               [(html_to_element(html_content), html_to_element(html_content))],
-                                               html_content)
-        assert '知识乱象\\n 中共中央政治局' in element_to_html_unescaped(result[587][0])
+        assert self.text_recognize._TextParagraphRecognizer__combine_text("知识乱象\n", "中共中央政治局召开会议审议《成-2020年10月16日新闻联播", "zh") == "知识乱象\n中共中央政治局召开会议审议《成-2020年10月16日新闻联播"
+        result = self.text_recognize.recognize("http://www.baidu.com", [(html_to_element(html_content), html_to_element(html_content))], html_content)
+        assert "知识乱象\\n 中共中央政治局" in element_to_html_unescaped(result[587][0])
 
     def test_text_2(self):
         """
@@ -41,20 +37,11 @@ class TestTextParagraphRecognize(unittest.TestCase):
         """
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
-        test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://www.aircraftspruce.com/catalog/pnpages/AT108AR-5_32.php',
-            'data_source_category': 'HTML',
-            'html_name': 'text2.html',
-            'main_html_name': 'text2.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
-        }
+        test_data = {"track_id": "text_md", "dataset_name": "text_md", "url": "https://www.aircraftspruce.com/catalog/pnpages/AT108AR-5_32.php", "data_source_category": "HTML", "html_name": "text2.html", "main_html_name": "text2.html", "file_bytes": 1000, "meta_info": {"input_datetime": "2020-01-01 00:00:00"}}
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_nlp_md()
-        assert 'Selecting Rivet Sets:\n\nTo develop maximum power' in content_md
+        assert "Selecting Rivet Sets:\n\nTo develop maximum power" in content_md
 
     def test_text_3(self):
         """
@@ -65,19 +52,22 @@ class TestTextParagraphRecognize(unittest.TestCase):
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://www.physicsforums.com/threads/how-do-convex-mirrors-affect-image-location-and-size.240850/',
-            'data_source_category': 'HTML',
-            'html_name': 'text3.html',
-            'main_html_name': 'text3.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://www.physicsforums.com/threads/how-do-convex-mirrors-affect-image-location-and-size.240850/",
+            "data_source_category": "HTML",
+            "html_name": "text3.html",
+            "main_html_name": "text3.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert "1. The problem statement, all variables and given/known data\nA woman of height 1.7 meters stands directly in front of a convex mirror 2.0 meters away. The mirror has a radius of curvature, R=-50cm. Find the location and size of a woman\'s image using the ray diagram and mirror/lens equation.\n----------\n2. The speed of light in a material is 2.50x10^8 meters per second. What is the index of refraction of the material?\n2. Relevant equations\n3. The attempt at a solution\n1. di=22.22\n2. Dont know" in content_md
+        assert (
+            "1. The problem statement, all variables and given/known data\nA woman of height 1.7 meters stands directly in front of a convex mirror 2.0 meters away. The mirror has a radius of curvature, R=-50cm. Find the location and size of a woman's image using the ray diagram and mirror/lens equation.\n----------\n2. The speed of light in a material is 2.50x10^8 meters per second. What is the index of refraction of the material?\n2. Relevant equations\n3. The attempt at a solution\n1. di=22.22\n2. Dont know"
+            in content_md
+        )
 
     def test_text_4(self):
         """
@@ -88,14 +78,14 @@ class TestTextParagraphRecognize(unittest.TestCase):
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://www.physicsforums.com/threads/isnt-the-normal-acceleration-always-towards-the-center.157291/',
-            'data_source_category': 'HTML',
-            'html_name': 'text4.html',
-            'main_html_name': 'text4.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://www.physicsforums.com/threads/isnt-the-normal-acceleration-always-towards-the-center.157291/",
+            "data_source_category": "HTML",
+            "html_name": "text4.html",
+            "main_html_name": "text4.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
@@ -111,19 +101,19 @@ class TestTextParagraphRecognize(unittest.TestCase):
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://shopnado.com.au/product/rigo-ride-on-car-tractor-toy-kids-electric-cars-12v-battery-child-toddlers-blue/',
-            'data_source_category': 'HTML',
-            'html_name': 'text5.html',
-            'main_html_name': 'text5.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://shopnado.com.au/product/rigo-ride-on-car-tractor-toy-kids-electric-cars-12v-battery-child-toddlers-blue/",
+            "data_source_category": "HTML",
+            "html_name": "text5.html",
+            "main_html_name": "text5.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert 'Please Note:\n 1. Charge the battery on receiving even if it will not be used soon.\n 2. Charge the battery EVERY MONTH if not in use for long periods to prevent over-discharging of the battery. This can cause irreparable damage to it.' in content_md
+        assert "Please Note:\n 1. Charge the battery on receiving even if it will not be used soon.\n 2. Charge the battery EVERY MONTH if not in use for long periods to prevent over-discharging of the battery. This can cause irreparable damage to it." in content_md
 
     def test_text_6(self):
         """
@@ -134,14 +124,14 @@ class TestTextParagraphRecognize(unittest.TestCase):
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://adelanta.biz/kuplu-knigi/the-experience-of-russian-bibliography-copikova-part-2-l/',
-            'data_source_category': 'HTML',
-            'html_name': 'text6.html',
-            'main_html_name': 'text6.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://adelanta.biz/kuplu-knigi/the-experience-of-russian-bibliography-copikova-part-2-l/",
+            "data_source_category": "HTML",
+            "html_name": "text6.html",
+            "main_html_name": "text6.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
@@ -155,13 +145,10 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        with open(core_path / 'assets/html/text7.html', 'r') as file:
+        with open(core_path / "assets/html/text7.html") as file:
             html_content = file.read()
-        result = self.text_recognize.recognize('http://www.baidu.com',
-                                               [(html_to_element(html_content), html_to_element(html_content))],
-                                               html_content)
-        assert '1) A man takes 5 hrs and 45 mins to walk to a certain place and ride back' in element_to_html_unescaped(
-            result[66][0]) and BaseHTMLElementRecognizer.is_cc_html(result[66][0])
+        result = self.text_recognize.recognize("http://www.baidu.com", [(html_to_element(html_content), html_to_element(html_content))], html_content)
+        assert "1) A man takes 5 hrs and 45 mins to walk to a certain place and ride back" in element_to_html_unescaped(result[66][0]) and BaseHTMLElementRecognizer.is_cc_html(result[66][0])
 
     def test_text_8(self):
         """
@@ -170,10 +157,10 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        with open(core_path / 'assets/html/text8.html', 'r') as file:
+        with open(core_path / "assets/html/text8.html") as file:
             html_content = file.read()
-        result = self.text_recognize.recognize('http://www.baidu.com', [(html_to_element(html_content), html_to_element(html_content))], html_content)
-        assert "40xy\' -ln(x^8) = 0\\n\\n Initial Condition: y(1)=31\\n\\n Work:" in element_to_html_unescaped(result[69][0]) and BaseHTMLElementRecognizer.is_cc_html(result[69][0])
+        result = self.text_recognize.recognize("http://www.baidu.com", [(html_to_element(html_content), html_to_element(html_content))], html_content)
+        assert "40xy' -ln(x^8) = 0\\n\\n Initial Condition: y(1)=31\\n\\n Work:" in element_to_html_unescaped(result[69][0]) and BaseHTMLElementRecognizer.is_cc_html(result[69][0])
 
     def test_text_9(self):
         """
@@ -182,10 +169,14 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        with open(core_path / 'assets/html/text9.html', 'r') as file:
+        with open(core_path / "assets/html/text9.html") as file:
             html_content = file.read()
-        result = self.text_recognize.recognize('http://www.baidu.com', [(html_to_element(html_content), html_to_element(html_content))], html_content)
-        assert '1) Consider the formula f(x)=lim(n--&gt;infinity)((x^n)/(1+x^n)).\\n Let D={x:f(x) is an element of R}. Calculate f(x) for all x elements of D and determine where f: D--&gt;R is continuous.\\n\\n 2) Let f: D--&gt;R and suppose that f(x) greater than equal 0 for all x elements of D. Define sqrt(f)--&gt;R by (sqrt(f))(x) = sqrt(f(x)). If f is continuous at c elements of D, prove that sqrt(f) is continuous at c.' in element_to_html_unescaped(result[63][0]) and BaseHTMLElementRecognizer.is_cc_html(result[63][0])
+        result = self.text_recognize.recognize("http://www.baidu.com", [(html_to_element(html_content), html_to_element(html_content))], html_content)
+        assert (
+            "1) Consider the formula f(x)=lim(n--&gt;infinity)((x^n)/(1+x^n)).\\n Let D={x:f(x) is an element of R}. Calculate f(x) for all x elements of D and determine where f: D--&gt;R is continuous.\\n\\n 2) Let f: D--&gt;R and suppose that f(x) greater than equal 0 for all x elements of D. Define sqrt(f)--&gt;R by (sqrt(f))(x) = sqrt(f(x)). If f is continuous at c elements of D, prove that sqrt(f) is continuous at c."
+            in element_to_html_unescaped(result[63][0])
+            and BaseHTMLElementRecognizer.is_cc_html(result[63][0])
+        )
 
     def test_text_10(self):
         """
@@ -196,19 +187,19 @@ class TestTextParagraphRecognize(unittest.TestCase):
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://www.physicsforums.com/threads/questions-about-parallel-worlds-by-michio-kaku-the-big-bang.612643/',
-            'data_source_category': 'HTML',
-            'html_name': 'text10.html',
-            'main_html_name': 'text10.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://www.physicsforums.com/threads/questions-about-parallel-worlds-by-michio-kaku-the-big-bang.612643/",
+            "data_source_category": "HTML",
+            "html_name": "text10.html",
+            "main_html_name": "text10.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert "So far I have 2 sets of questions (but I\'m onlin in the 2nd chapter now\n1)\nIn the book" in content_md
+        assert "So far I have 2 sets of questions (but I'm onlin in the 2nd chapter now\n1)\nIn the book" in content_md
         # with open('/home/PJLAB/houlinfeng/projects/custom_plugins/000.md', 'w', encoding='utf-8') as f:
         #     f.write(content_md)
 
@@ -220,20 +211,11 @@ class TestTextParagraphRecognize(unittest.TestCase):
         """
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
-        test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'http://community.wikia.com/wiki/Help_talk:Theme_designer',
-            'data_source_category': 'HTML',
-            'html_name': 'text11.html',
-            'main_html_name': 'text11.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
-        }
+        test_data = {"track_id": "text_md", "dataset_name": "text_md", "url": "http://community.wikia.com/wiki/Help_talk:Theme_designer", "data_source_category": "HTML", "html_name": "text11.html", "main_html_name": "text11.html", "file_bytes": 1000, "meta_info": {"input_datetime": "2020-01-01 00:00:00"}}
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert '86,821 pages on' in content_md
+        assert "86,821 pages on" in content_md
 
     def test_text_12(self):
         """
@@ -243,20 +225,11 @@ class TestTextParagraphRecognize(unittest.TestCase):
         """
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
-        test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://betterexplained.com/~kazad/resources/shorts/karate_old.html',
-            'data_source_category': 'HTML',
-            'html_name': 'text12.html',
-            'main_html_name': 'text12.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
-        }
+        test_data = {"track_id": "text_md", "dataset_name": "text_md", "url": "https://betterexplained.com/~kazad/resources/shorts/karate_old.html", "data_source_category": "HTML", "html_name": "text12.html", "main_html_name": "text12.html", "file_bytes": 1000, "meta_info": {"input_datetime": "2020-01-01 00:00:00"}}
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert 'For maintaining mount' in content_md
+        assert "For maintaining mount" in content_md
 
     def test_text_line_exception(self):
         """
@@ -267,19 +240,19 @@ class TestTextParagraphRecognize(unittest.TestCase):
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://www.oltrelebarriere.net/5825/permessi-per-lassistenza-ai-familiari-disabili/',
-            'data_source_category': 'HTML',
-            'html_name': 'test_text_line_exception.html',
-            'main_html_name': 'test_text_line_exception.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'}
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://www.oltrelebarriere.net/5825/permessi-per-lassistenza-ai-familiari-disabili/",
+            "data_source_category": "HTML",
+            "html_name": "test_text_line_exception.html",
+            "main_html_name": "test_text_line_exception.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert 'sensi dell’art.33' in content_md
+        assert "sensi dell’art.33" in content_md
 
     def test_no_separation_language(self):
         """
@@ -289,20 +262,20 @@ class TestTextParagraphRecognize(unittest.TestCase):
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://www.zjfish.org/Talent/Detail/876289162604750/2174994673059649',
-            'data_source_category': 'HTML',
-            'html_name': 'zh.html',
-            'main_html_name': 'zh.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'zh'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://www.zjfish.org/Talent/Detail/876289162604750/2174994673059649",
+            "data_source_category": "HTML",
+            "html_name": "zh.html",
+            "main_html_name": "zh.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "zh",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert '成果； 三' not in content_md
+        assert "成果； 三" not in content_md
 
     def test_tail_space(self):
         """
@@ -311,45 +284,35 @@ class TestTextParagraphRecognize(unittest.TestCase):
         """
         chain = ExtractSimpleFactory.create(self.config)
         self.assertIsNotNone(chain)
-        test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'br.html',
-            'main_html_name': 'br.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'br'
-        }
+        test_data = {"track_id": "text_md", "dataset_name": "text_md", "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1", "data_source_category": "HTML", "html_name": "br.html", "main_html_name": "br.html", "file_bytes": 1000, "meta_info": {"input_datetime": "2020-01-01 00:00:00"}, "language": "br"}
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert 'Henañ (c' in content_md
+        assert "Henañ (c" in content_md
 
     def test_interactive_element(self):
         """
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'delete_interactive_element1.html',
-            'main_html_name': 'delete_interactive_element1_main.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "delete_interactive_element1.html",
+            "main_html_name": "delete_interactive_element1_main.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         # 验证 main_html 中没有交互元素
-        main_html = result.get('main_html')
-        assert '<input' not in main_html
+        main_html = result.get("main_html")
+        assert "<input" not in main_html
 
     def test_normalize_space1(self):
         """
@@ -357,23 +320,23 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'text_normalize_space1.html',
-            'main_html_name': 'text_normalize_space1_main.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "text_normalize_space1.html",
+            "main_html_name": "text_normalize_space1_main.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert 'Please note! These' in content_md
+        assert "Please note! These" in content_md
 
     def test_normalize_space2(self):
         """
@@ -381,23 +344,23 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'text_normalize_space2.html',
-            'main_html_name': 'text_normalize_space2_main.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "text_normalize_space2.html",
+            "main_html_name": "text_normalize_space2_main.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert 'December 10th 2009, 06:42 PM\nfearless901\nCan someone please tell me my code wont work, error after error\nim need to write code to get height and time of the fluid in a reservoir, help guys. is my functions wrong?\nCode' in content_md
+        assert "December 10th 2009, 06:42 PM\nfearless901\nCan someone please tell me my code wont work, error after error\nim need to write code to get height and time of the fluid in a reservoir, help guys. is my functions wrong?\nCode" in content_md
 
     def test_normalize_space3(self):
         """
@@ -405,23 +368,23 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'text_normalize_space3.html',
-            'main_html_name': 'text_normalize_space3_main.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "text_normalize_space3.html",
+            "main_html_name": "text_normalize_space3_main.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert '### Volume 6, Issue 3, 01 February 1965\n\n- INFRARED LASER ACTION AND LIFETIMES IN ARGON II\nF. A. Horrigan , S. H. Koozekanani and R. A. Paananen\nScitation Author Page\nPubMed\nGoogle Scholar\nSource' in content_md
+        assert "### Volume 6, Issue 3, 01 February 1965\n\n- INFRARED LASER ACTION AND LIFETIMES IN ARGON II\nF. A. Horrigan , S. H. Koozekanani and R. A. Paananen\nScitation Author Page\nPubMed\nGoogle Scholar\nSource" in content_md
 
     def test_normalize_space4(self):
         """
@@ -429,24 +392,24 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'text_normalize_space4.html',
-            'main_html_name': 'text_normalize_space4_main.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "text_normalize_space4.html",
+            "main_html_name": "text_normalize_space4_main.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert '1. DrDu\nLieber Hendrik,\nkannst Du hierzu was beitragen?\nIch finde keinen rechten Grund'
-        assert 'Show Ignored Content' not in content_md  # 这个是隐藏标签，不应该被识别出来
+        assert "1. DrDu\nLieber Hendrik,\nkannst Du hierzu was beitragen?\nIch finde keinen rechten Grund"
+        assert "Show Ignored Content" not in content_md  # 这个是隐藏标签，不应该被识别出来
 
     def test_Lack_content1(self):
         """
@@ -454,23 +417,23 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'Lack_content1.html',
-            'main_html_name': 'Lack_content1_main.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "Lack_content1.html",
+            "main_html_name": "Lack_content1_main.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert 'a) Electronic mail: airegg.py90g@nctu.edu.tw .' in content_md
+        assert "a) Electronic mail: airegg.py90g@nctu.edu.tw ." in content_md
 
     def test_para_br(self):
         """
@@ -478,23 +441,23 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'para_br.html',
-            'main_html_name': 'para_br_main.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "para_br.html",
+            "main_html_name": "para_br_main.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
         content_md = result.get_content_list().to_mm_md()
-        assert 'The interquartile range formula is the first quartile subtracted from the third quartile:\n $IQR = Q_{3}-Q_{1}' in content_md
+        assert "The interquartile range formula is the first quartile subtracted from the third quartile:\n $IQR = Q_{3}-Q_{1}" in content_md
 
     def test_para_has_none(self):
         """
@@ -502,18 +465,18 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'para_has_none.html',
-            'main_html_name': 'para_has_none.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "para_has_none.html",
+            "main_html_name": "para_has_none.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
@@ -526,18 +489,18 @@ class TestTextParagraphRecognize(unittest.TestCase):
         Returns:
 
         """
-        chain = ExtractSimpleFactory.create(load_pipe_tpl('noclip_html_test'))
+        chain = ExtractSimpleFactory.create(load_pipe_tpl("noclip_html_test"))
         self.assertIsNotNone(chain)
         test_data = {
-            'track_id': 'text_md',
-            'dataset_name': 'text_md',
-            'url': 'https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1',
-            'data_source_category': 'HTML',
-            'html_name': 'clean_invisible_elements.html',
-            'main_html_name': 'clean_invisible_elements.html',
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-            'language': 'en'
+            "track_id": "text_md",
+            "dataset_name": "text_md",
+            "url": "https://br.wikipedia.org/wiki/Faustina_an_Hena%C3%B1",
+            "data_source_category": "HTML",
+            "html_name": "clean_invisible_elements.html",
+            "main_html_name": "clean_invisible_elements.html",
+            "file_bytes": 1000,
+            "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            "language": "en",
         }
         input_data = DataJson(test_data)
         result = chain.extract(input_data)
@@ -553,26 +516,26 @@ class TestTextParagraphRecognize(unittest.TestCase):
         text_recognizer = TextParagraphRecognizer()
 
         # 测试各种空字符串组合
-        result1 = text_recognizer._TextParagraphRecognizer__combine_text('hello', '', 'en')
-        self.assertEqual(result1, 'hello')
+        result1 = text_recognizer._TextParagraphRecognizer__combine_text("hello", "", "en")
+        self.assertEqual(result1, "hello")
 
-        result2 = text_recognizer._TextParagraphRecognizer__combine_text('', 'world', 'en')
-        self.assertEqual(result2, 'world')
+        result2 = text_recognizer._TextParagraphRecognizer__combine_text("", "world", "en")
+        self.assertEqual(result2, "world")
 
-        result3 = text_recognizer._TextParagraphRecognizer__combine_text('', '', 'en')
-        self.assertEqual(result3, '')
+        result3 = text_recognizer._TextParagraphRecognizer__combine_text("", "", "en")
+        self.assertEqual(result3, "")
 
         # 测试包含空格但trim后变空的情况
-        result4 = text_recognizer._TextParagraphRecognizer__combine_text('hello', '   ', 'en')
-        self.assertEqual(result4, 'hello')
+        result4 = text_recognizer._TextParagraphRecognizer__combine_text("hello", "   ", "en")
+        self.assertEqual(result4, "hello")
 
-        result5 = text_recognizer._TextParagraphRecognizer__combine_text('   ', 'world', 'en')
-        self.assertEqual(result5, 'world')
+        result5 = text_recognizer._TextParagraphRecognizer__combine_text("   ", "world", "en")
+        self.assertEqual(result5, "world")
 
         # 测试正常情况仍然工作
-        result6 = text_recognizer._TextParagraphRecognizer__combine_text('hello', 'world', 'en')
-        self.assertEqual(result6, 'hello world')
+        result6 = text_recognizer._TextParagraphRecognizer__combine_text("hello", "world", "en")
+        self.assertEqual(result6, "hello world")
 
         # 测试标点符号情况
-        result7 = text_recognizer._TextParagraphRecognizer__combine_text('hello', ',world', 'en')
-        self.assertEqual(result7, 'hello,world')
+        result7 = text_recognizer._TextParagraphRecognizer__combine_text("hello", ",world", "en")
+        self.assertEqual(result7, "hello,world")

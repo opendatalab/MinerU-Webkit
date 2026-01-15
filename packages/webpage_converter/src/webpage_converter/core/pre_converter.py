@@ -1,8 +1,10 @@
 import os
+
 from overrides import override
 from selectolax.parser import HTMLParser
-from ..config.config import INVISIBLE_TAGS
+
 from ..abstracts.pre_abstract import BaseFileFormatFilterPreConverter
+from ..config.config import INVISIBLE_TAGS
 from ..schemas.datajson import DataJson
 from ..utils.html_utils import element_to_html, html_to_element, remove_element
 from ..utils.path_lib import get_proj_root_dir
@@ -60,7 +62,7 @@ class HTMLFileFormatNoClipFilterTablePreConverter(HTMLFileFormatFilterPreConvert
         return data_json
 
     def __remove_format_table(self, data_json: DataJson):
-        """remove 排版table."""
+        """Remove 排版table."""
         html_content = self._get_html_content(data_json)
         return self.__do_remove_layout_table(html_content)
 
@@ -68,7 +70,7 @@ class HTMLFileFormatNoClipFilterTablePreConverter(HTMLFileFormatFilterPreConvert
         return data_json["html"]
 
     def __do_remove_layout_table(self, html_content: str):
-        """remove 排版table."""
+        """Remove 排版table."""
         html_str = html_to_element(html_content)
         first_structure = html_str.xpath("/html/body/table") != []
         second_structure = html_str.xpath("/html/body/center/table") != []
@@ -97,9 +99,7 @@ class HTMLFileFormatNoClipCleanTagsPreConverter(HTMLFileFormatFilterPreConverter
         # 遍历所有配置的隐藏标签规则
         for tag in INVISIBLE_TAGS:
             # 如果url是通配符*或者匹配当前url
-            if tag["url"] == "*" or (
-                data_json["url"] and tag["url"] in data_json["url"]
-            ):
+            if tag["url"] == "*" or (data_json["url"] and tag["url"] in data_json["url"]):
                 # 查找所有匹配xpath的节点
                 elements = tree.xpath(tag["tag"])
                 for element in elements:
@@ -126,7 +126,7 @@ class TestHTMLFileToDataJsonPreConverter(HTMLFileFormatFilterPreConverter):
         proj_root_dir = get_proj_root_dir()
         print(f"proj_root_dir:{proj_root_dir}")
         print(f"self.__html_parent_path:{self.__html_parent_path}")
-        print(f"path:{data_json.get("path")}")
+        print(f"path:{data_json.get('path')}")
         html = data_json.get("html")
         main_html = data_json.get("main_html")
         if not html and not main_html:
@@ -140,18 +140,14 @@ class TestHTMLFileToDataJsonPreConverter(HTMLFileFormatFilterPreConverter):
                 if main_html_name and not html_name:
                     main_html_name = html_name
 
-                html_file_path = os.path.join(
-                    proj_root_dir, self.__html_parent_path, html_name
-                )
-                main_html_file_path = os.path.join(
-                    proj_root_dir, self.__html_parent_path, main_html_name if main_html_name else html_name
-                )
-                with open(html_file_path, "r", encoding="utf-8") as f:
+                html_file_path = os.path.join(proj_root_dir, self.__html_parent_path, html_name)
+                main_html_file_path = os.path.join(proj_root_dir, self.__html_parent_path, main_html_name if main_html_name else html_name)
+                with open(html_file_path, encoding="utf-8") as f:
                     html = f.read()
                     if "html_name" in data_json:
                         del data_json["html_name"]
 
-                with open(main_html_file_path, "r", encoding="utf-8") as f:
+                with open(main_html_file_path, encoding="utf-8") as f:
                     main_html = f.read()
                     if "main_html_name" in data_json:
                         del data_json["main_html_name"]
@@ -201,17 +197,13 @@ class HTMLFileFormatNoClipPreConverter(HTMLFileFormatFilterPreConverter):
 
                 # 删除关联的label（通过for属性匹配）
                 if "id" in element.attrib:
-                    for label in tree.xpath(
-                        f'//body//label[@for="{element.attrib["id"]}"]'
-                    ):
+                    for label in tree.xpath(f'//body//label[@for="{element.attrib["id"]}"]'):
                         label.getparent().remove(label)
 
         # 处理<form>内的交互标签及关联label
         for form in tree.xpath("//form"):
             # 删除表单内所有交互标签
-            form_elements = form.xpath(
-                ".//input | .//select | .//textarea | .//button | .//label | .//img"
-            )
+            form_elements = form.xpath(".//input | .//select | .//textarea | .//button | .//label | .//img")
             for element in form_elements:
                 element.getparent().remove(element)
 

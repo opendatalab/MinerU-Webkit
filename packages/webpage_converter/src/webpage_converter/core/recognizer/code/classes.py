@@ -1,6 +1,8 @@
 from lxml.html import HtmlElement
-from .common import replace_node_by_cccode
+
 from webpage_converter.core.base_recognizer import CCTag
+
+from .common import replace_node_by_cccode
 
 no_code_tags = [
     "audio",
@@ -32,10 +34,7 @@ def modify_tree(root: HtmlElement) -> None:
         # 应对list或者audio被识别为code的情况
         if maybe_code_root.tag in no_code_tags:
             continue
-        if maybe_code_root.tag == "div" and (
-            any([child.tag in no_code_tags for child in maybe_code_root.iterchildren()])
-            or len([child for child in maybe_code_root.iterchildren()]) == 0
-        ):
+        if maybe_code_root.tag == "div" and (any([child.tag in no_code_tags for child in maybe_code_root.iterchildren()]) or len([child for child in maybe_code_root.iterchildren()]) == 0):
             continue
         if len(maybe_code_root.xpath(f".//{CCTag.CC_CODE}")) > 0:
             continue
@@ -51,9 +50,7 @@ def detect(root: HtmlElement) -> bool:
             continue
         if maybe_code_root.tag in no_code_tags:
             continue
-        if maybe_code_root.tag == "div" and any(
-            [child.tag in no_code_tags for child in maybe_code_root.iterchildren()]
-        ):
+        if maybe_code_root.tag == "div" and any([child.tag in no_code_tags for child in maybe_code_root.iterchildren()]):
             continue
         if len(maybe_code_root.xpath(f".//{CCTag.CC_CODE}")) > 0:
             continue

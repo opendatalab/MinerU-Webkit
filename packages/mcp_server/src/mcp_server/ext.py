@@ -1,17 +1,17 @@
-import uuid
 import traceback
-from fastapi import FastAPI, Request, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+import uuid
+from contextlib import asynccontextmanager
+
+from apps.html.batch_processor import batch_processor
 from apps.html.views import api_router
 from configs import model_config
-from contextlib import asynccontextmanager
-from utils.logging import request_id_var
-from apps.html.batch_processor import batch_processor
-from utils.custom_response import Response as _Response
-
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from loguru import logger
+from utils.custom_response import Response as _Response
+from utils.logging import request_id_var
 
 
 @asynccontextmanager
@@ -20,18 +20,14 @@ async def lifespan(app: FastAPI):
         # --- 启动逻辑 ---
         # 在应用启动时进行自定义校验
         if not model_config.model_path:
-            logger.warning(
-                "启动异常：配置项 'model_path' 不能为空。请检查环境变量或 .env 文件设置。"
-            )
+            logger.warning("启动异常：配置项 'model_path' 不能为空。请检查环境变量或 .env 文件设置。")
         else:
             # 检查路径是否存在且有效
             from pathlib import Path
 
             model_file = Path(model_config.model_path)
             if not model_file.exists():
-                logger.error(
-                    f"启动失败：指定的模型文件不存在于路径 {model_config.model_path}"
-                )
+                logger.error(f"启动失败：指定的模型文件不存在于路径 {model_config.model_path}")
             else:
                 logger.info("✅ 配置校验通过，应用启动中...")
                 await batch_processor.start()
@@ -57,9 +53,7 @@ app.add_middleware(
 
 @app.middleware("http")
 async def add_request_id_middleware(request: Request, call_next):
-    """
-    中间件：为每个请求生成唯一ID，并注入日志上下文和响应头。
-    """
+    """中间件：为每个请求生成唯一ID，并注入日志上下文和响应头。"""
     # 1. 尝试从请求头获取现有ID，若无则生成一个新的UUIDv4
     rid = request.headers.get("X-Request-ID", str(uuid.uuid4()))
 
@@ -85,9 +79,7 @@ async def add_request_id_middleware(request: Request, call_next):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    全局处理 Pydantic 参数校验错误，并返回统一的 Response 格式。
-    """
+    """全局处理 Pydantic 参数校验错误，并返回统一的 Response 格式。"""
     errors = exc.errors()
     if errors:
         first_error = errors[0]

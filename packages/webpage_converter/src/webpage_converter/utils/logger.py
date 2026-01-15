@@ -1,15 +1,15 @@
 import sys
 import tempfile
+
 from loguru import logger
+
 from .cfg_reader import load_config
 
 
 def init_logger(config: dict = None):
     """按照配置初始化日志系统."""
     tempfile.gettempdir()
-    default_log_format = (
-        "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}"
-    )
+    default_log_format = "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}"
 
     logger_cfg = []
     if config:

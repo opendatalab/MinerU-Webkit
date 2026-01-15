@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+
 from overrides import override
-from ..utils.file_type_matcher import FileTypeMatcher
+
 from ..schemas.datajson import DataJson
+from ..utils.file_type_matcher import FileTypeMatcher
 
 
 class AbstractPreConverter(ABC):

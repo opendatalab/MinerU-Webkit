@@ -1,7 +1,9 @@
 from lxml.html import HtmlElement
-from .common import CCMATH, CCTag, MathType, text_strip
+
 from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer
 from webpage_converter.utils.html_utils import build_cc_element, replace_element
+
+from .common import CCMATH, CCTag, MathType, text_strip
 
 
 # <mjx-container display="true" jax="CHTML">
@@ -22,9 +24,7 @@ def modify_tree(cm: CCMATH, math_render: str, o_html: str, node: HtmlElement):
         formula = node.find(".//formula")
         if formula is not None and formula.text:
             # 如果已经包含指定的ccmath标签，不进行替换
-            if BaseHTMLElementRecognizer.is_cc_html(
-                formula, [CCTag.CC_MATH_INTERLINE, CCTag.CC_MATH_INLINE]
-            ):
+            if BaseHTMLElementRecognizer.is_cc_html(formula, [CCTag.CC_MATH_INTERLINE, CCTag.CC_MATH_INLINE]):
                 return
         display = node.get("display", "false").lower() == "true"
         if display:

@@ -4,8 +4,9 @@ from pathlib import Path
 
 import requests
 from configs import oss_config
-from .path_utils import extract_filename_and_ext_from_url
 from loguru import logger
+
+from .path_utils import extract_filename_and_ext_from_url
 
 
 def check_mkdir(file_path: str):
@@ -18,8 +19,7 @@ def check_mkdir(file_path: str):
 
 
 def fetch_url(file_url: str, local_dir: str, file_name: str = "") -> str:
-    """
-    Downloads a file from the given file_url and saves it to the local_path.
+    """Downloads a file from the given file_url and saves it to the local_path.
 
     Parameters:
     - file_url (str): The URL of the file to be downloaded.
@@ -45,9 +45,7 @@ def fetch_url(file_url: str, local_dir: str, file_name: str = "") -> str:
     else:
         _, file_ext = extract_filename_and_ext_from_url(file_url)
         unique_file_name = uuid.uuid4().hex + "." + file_ext
-        logger.info(
-            f"file_url:{file_url}, file_ext:{file_ext}, unique_file_name:{unique_file_name}"
-        )
+        logger.info(f"file_url:{file_url}, file_ext:{file_ext}, unique_file_name:{unique_file_name}")
         local_file_path = os.path.join(local_dir, unique_file_name)
 
     # Send a GET request to retrieve the file content
@@ -60,22 +58,15 @@ def fetch_url(file_url: str, local_dir: str, file_name: str = "") -> str:
             # Write the response content to the local file in chunks
             for chunk in response.iter_content(chunk_size=1024):
                 file.write(chunk)
-        logger.debug(
-            f"file {file_url} downloaded successfully and saved to: {local_file_path}"
-        )
+        logger.debug(f"file {file_url} downloaded successfully and saved to: {local_file_path}")
     else:
         logger.debug(f"request failed with status code: {response.status_code}")
-        raise Exception(
-            f"download file {file_url} failed, status code: {response.status_code} err_msg:{response.text}"
-        )
+        raise Exception(f"download file {file_url} failed, status code: {response.status_code} err_msg:{response.text}")
     return local_file_path
 
 
 def is_html_file(file_path):
-    """
-    校验文件是否为HTML格式
-    使用多种方法确保准确性
-    """
+    """校验文件是否为HTML格式 使用多种方法确保准确性."""
     # 方法1: 检查文件扩展名 [9](@ref)
     valid_extensions = {".html", ".htm"}
     file_extension = Path(file_path).suffix.lower()
@@ -92,9 +83,7 @@ def is_html_file(file_path):
 
         # 检查是否包含任何预定义的HTML标识
         # 读取的是二进制数据，直接在 bytes 内容中进行搜索
-        has_html_structure = any(
-            indicator in content_start.lower() for indicator in html_content_indicators
-        )
+        has_html_structure = any(indicator in content_start.lower() for indicator in html_content_indicators)
 
         return has_html_structure
 

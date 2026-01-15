@@ -1,218 +1,219 @@
 import unittest
 from pathlib import Path
-from webpage_converter.utils.cfg_reader import load_pipe_tpl
+
 from webpage_converter.convert_chain import ExtractSimpleFactory
-from webpage_converter.core.recognizer.cccode import CodeRecognizer
 from webpage_converter.core.base_recognizer import CCTag
+from webpage_converter.core.recognizer.cccode import CodeRecognizer
 from webpage_converter.schemas.datajson import DataJson
+from webpage_converter.utils.cfg_reader import load_pipe_tpl
 from webpage_converter.utils.html_utils import get_element_text, html_to_element
 
 TEST_CASES = [
     {
-        'input': (
-            'assets/cccode/mathorg.html',
-            'https://www.mathorg.cn/forum.php?mod=viewthread&tid=36798&extra=page%3D1',
+        "input": (
+            "assets/cccode/mathorg.html",
+            "https://www.mathorg.cn/forum.php?mod=viewthread&tid=36798&extra=page%3D1",
         ),
-        'expected': [
-            'assets/cccode/mathorg-0.py',
+        "expected": [
+            "assets/cccode/mathorg-0.py",
         ],
     },
     {
-        'input': (
-            'assets/cccode/cprograming.html',
-            'https://cboard.cprogramming.com/c-programming/96288-one-question-about-array-function-prototype-declaration-printable-thread.html',
+        "input": (
+            "assets/cccode/cprograming.html",
+            "https://cboard.cprogramming.com/c-programming/96288-one-question-about-array-function-prototype-declaration-printable-thread.html",
         ),
-        'expected': [
-            'assets/cccode/cprograming.c',
-            'int a[]',
+        "expected": [
+            "assets/cccode/cprograming.c",
+            "int a[]",
         ],
     },
     {
-        'input': (
-            'assets/cccode/geeksforgeeks.html',
-            'https://www.geeksforgeeks.org/output-java-program-set-7/?ref=rp',
+        "input": (
+            "assets/cccode/geeksforgeeks.html",
+            "https://www.geeksforgeeks.org/output-java-program-set-7/?ref=rp",
         ),
-        'expected': [
-            'assets/cccode/geeksforgeeks-0.java',
-            'assets/cccode/geeksforgeeks-1.java',
-            'assets/cccode/geeksforgeeks-2.java',
-            'assets/cccode/geeksforgeeks-3.java',
-            'assets/cccode/geeksforgeeks-4.java',
+        "expected": [
+            "assets/cccode/geeksforgeeks-0.java",
+            "assets/cccode/geeksforgeeks-1.java",
+            "assets/cccode/geeksforgeeks-2.java",
+            "assets/cccode/geeksforgeeks-3.java",
+            "assets/cccode/geeksforgeeks-4.java",
         ],
     },
     {
-        'input': (
-            'assets/cccode/homemade.html',
-            'https://www.test.com/',
+        "input": (
+            "assets/cccode/homemade.html",
+            "https://www.test.com/",
         ),
-        'expected': [
-            'assets/cccode/homemade-0.py',
-            'assets/cccode/homemade-1.py',
-            'assets/cccode/homemade-2.py',
+        "expected": [
+            "assets/cccode/homemade-0.py",
+            "assets/cccode/homemade-1.py",
+            "assets/cccode/homemade-2.py",
         ],
     },
     {
-        'input': (
-            'assets/cccode/prismjs.html',
-            'https://prismjs.com/',
+        "input": (
+            "assets/cccode/prismjs.html",
+            "https://prismjs.com/",
         ),
-        'expected': [
-            'code.language-xxxx',
-            '.comment',
-            '.string',
-            '.property',
-            '<pre>',
-            '<script>',
-            '<code>',
-            '<pre>',
-            'language-xxxx',
-            'language-xxxx',
-            'prism.css',
-            'prism.js',
-            'assets/cccode/prismjs-0.html',
-            '<code>',
-            '<code>',
-            'language-xxxx',
-            'lang-xxxx',
-            '<pre>',
-            '<code>',
-            'assets/cccode/prismjs-1.html',
-            '<pre>',
-            'language-xxxx',
-            'assets/cccode/prismjs-2.html',
-            '<',
-            '&',
-            '<code>',
-            '&lt;',
-            '&amp;',
-            '<code>',
-            'language-xxxx',
-            'language-xxxx',
-            '<body>',
-            '<html>',
-            '<code>',
-            'language-none',
-            'none',
-            'language-plain',
-            'Prism.manual',
-            'true',
-            'DOMContentLoaded',
-            'data-manual',
-            '<script>',
-            'assets/cccode/prismjs-3.html',
-            'assets/cccode/prismjs-4.html',
-            'assets/cccode/prismjs-5.html',
-            'npm',
-            'assets/cccode/prismjs-6.sh',
-            'import',
-            'assets/cccode/prismjs-7.ts',
-            'assets/cccode/prismjs-8.js',
-            'prismjs',
-            'markup',
-            'css',
-            'clike',
-            'javascript',
-            'loadLanguages()',
-            'assets/cccode/prismjs-9.js',
-            'loadLanguages()',
-            'loadLanguages()',
-            'loadLanguages.silent = true',
-            'xxxx',
-            'language-xxxx',
-            'lang-xxxx',
+        "expected": [
+            "code.language-xxxx",
+            ".comment",
+            ".string",
+            ".property",
+            "<pre>",
+            "<script>",
+            "<code>",
+            "<pre>",
+            "language-xxxx",
+            "language-xxxx",
+            "prism.css",
+            "prism.js",
+            "assets/cccode/prismjs-0.html",
+            "<code>",
+            "<code>",
+            "language-xxxx",
+            "lang-xxxx",
+            "<pre>",
+            "<code>",
+            "assets/cccode/prismjs-1.html",
+            "<pre>",
+            "language-xxxx",
+            "assets/cccode/prismjs-2.html",
+            "<",
+            "&",
+            "<code>",
+            "&lt;",
+            "&amp;",
+            "<code>",
+            "language-xxxx",
+            "language-xxxx",
+            "<body>",
+            "<html>",
+            "<code>",
+            "language-none",
+            "none",
+            "language-plain",
+            "Prism.manual",
+            "true",
+            "DOMContentLoaded",
+            "data-manual",
+            "<script>",
+            "assets/cccode/prismjs-3.html",
+            "assets/cccode/prismjs-4.html",
+            "assets/cccode/prismjs-5.html",
+            "npm",
+            "assets/cccode/prismjs-6.sh",
+            "import",
+            "assets/cccode/prismjs-7.ts",
+            "assets/cccode/prismjs-8.js",
+            "prismjs",
+            "markup",
+            "css",
+            "clike",
+            "javascript",
+            "loadLanguages()",
+            "assets/cccode/prismjs-9.js",
+            "loadLanguages()",
+            "loadLanguages()",
+            "loadLanguages.silent = true",
+            "xxxx",
+            "language-xxxx",
+            "lang-xxxx",
         ],
     },
     {
-        'input': (
-            'assets/cccode/react.html',
-            'https://react.dev/reference/react/Fragment',
+        "input": (
+            "assets/cccode/react.html",
+            "https://react.dev/reference/react/Fragment",
         ),
-        'expected': [
-            '<Fragment>',
-            '<>...</>',
-            'assets/cccode/react-0.html',
-            '<Fragment>',
-            '<Fragment>',
-            '<Fragment>',
-            'Fragment',
-            '<></>',
-            '<Fragment></Fragment>',
-            'key',
-            '<Fragment>',
-            'key',
-            '<>...</>',
-            'Fragment',
+        "expected": [
+            "<Fragment>",
+            "<>...</>",
+            "assets/cccode/react-0.html",
+            "<Fragment>",
+            "<Fragment>",
+            "<Fragment>",
+            "Fragment",
+            "<></>",
+            "<Fragment></Fragment>",
+            "key",
+            "<Fragment>",
+            "key",
+            "<>...</>",
+            "Fragment",
             "'react'",
-            '<Fragment key={yourKey}>...</Fragment>',
-            '<><Child /></>',
-            '[<Child />]',
-            '<><Child /></>',
-            '<Child />',
-            '<><><Child /></></>',
-            '<Child />',
-            'Fragment',
-            '<>...</>',
-            'assets/cccode/react-1.js',
-            '<h1>',
-            '<article>',
-            'assets/cccode/react-6.js',
-            'Fragment',
-            'assets/cccode/react-2.js',
-            'key',
-            'Fragment',
-            'assets/cccode/react-3.js',
-            'Fragment',
-            'assets/cccode/react-4.js',
-            'Fragment',
-            '<></>',
-            'key',
-            'key',
-            'assets/cccode/react-5.js',
-            'assets/cccode/react-7.js',
-            '<Fragment>',
+            "<Fragment key={yourKey}>...</Fragment>",
+            "<><Child /></>",
+            "[<Child />]",
+            "<><Child /></>",
+            "<Child />",
+            "<><><Child /></></>",
+            "<Child />",
+            "Fragment",
+            "<>...</>",
+            "assets/cccode/react-1.js",
+            "<h1>",
+            "<article>",
+            "assets/cccode/react-6.js",
+            "Fragment",
+            "assets/cccode/react-2.js",
+            "key",
+            "Fragment",
+            "assets/cccode/react-3.js",
+            "Fragment",
+            "assets/cccode/react-4.js",
+            "Fragment",
+            "<></>",
+            "key",
+            "key",
+            "assets/cccode/react-5.js",
+            "assets/cccode/react-7.js",
+            "<Fragment>",
         ],
     },
     {
-        'input': (
-            'assets/cccode/stackoverflow.html',
-            'https://stackoverflow.com/questions/35302978/how-to-get-current-value-of-androids-proximity-sensor',
+        "input": (
+            "assets/cccode/stackoverflow.html",
+            "https://stackoverflow.com/questions/35302978/how-to-get-current-value-of-androids-proximity-sensor",
         ),
-        'expected': [
-            'proximitySensor.getCurrentDistance();',
-            'values[0]',
-            'onSensorChanged',
+        "expected": [
+            "proximitySensor.getCurrentDistance();",
+            "values[0]",
+            "onSensorChanged",
             # 'assets/cccode/stackoverflow-0.java',
-            'assets/cccode/stackoverflow-1.xml',
-            'assets/cccode/stackoverflow-2.java',
+            "assets/cccode/stackoverflow-1.xml",
+            "assets/cccode/stackoverflow-2.java",
         ],
     },
     {
-        'input': (
-            'assets/cccode/telerik.html',
-            'https://www.telerik.com/forums/virtual-mode-custom-cell-datatemplate-problems',
+        "input": (
+            "assets/cccode/telerik.html",
+            "https://www.telerik.com/forums/virtual-mode-custom-cell-datatemplate-problems",
         ),
-        'expected': [
-            'assets/cccode/telerik-0.cs',
-            'assets/cccode/telerik-1.cs',
-            'assets/cccode/telerik-9',
-            'assets/cccode/telerik-2.xml',
-            'assets/cccode/telerik-3.cs',
-            'assets/cccode/telerik-4.xml',
-            'assets/cccode/telerik-5.cs',
-            'assets/cccode/telerik-6.cs',
-            'assets/cccode/telerik-7.xml',
-            'assets/cccode/telerik-8.cs',
+        "expected": [
+            "assets/cccode/telerik-0.cs",
+            "assets/cccode/telerik-1.cs",
+            "assets/cccode/telerik-9",
+            "assets/cccode/telerik-2.xml",
+            "assets/cccode/telerik-3.cs",
+            "assets/cccode/telerik-4.xml",
+            "assets/cccode/telerik-5.cs",
+            "assets/cccode/telerik-6.cs",
+            "assets/cccode/telerik-7.xml",
+            "assets/cccode/telerik-8.cs",
         ],
     },
     {
-        'input': (
-            'assets/cccode/table-code.html',
-            'https://git.znc.in/Dessa/gentoo/src/commit/d8bae05997012bacefdf65cb1f273a437c448129/sys-process/audit/audit-2.6.4.ebuild',
+        "input": (
+            "assets/cccode/table-code.html",
+            "https://git.znc.in/Dessa/gentoo/src/commit/d8bae05997012bacefdf65cb1f273a437c448129/sys-process/audit/audit-2.6.4.ebuild",
         ),
-        'expected': [
-            'assets/cccode/table-code-1.sh',
+        "expected": [
+            "assets/cccode/table-code-1.sh",
         ],
-    }
+    },
 ]
 
 core_path = Path(__file__).resolve().parent.parent
@@ -221,7 +222,7 @@ core_path = Path(__file__).resolve().parent.parent
 class TestCodeRecognizer(unittest.TestCase):
     def setUp(self):
         self.rec = CodeRecognizer()
-        self.chain_config = load_pipe_tpl('noclip_html_test')
+        self.chain_config = load_pipe_tpl("noclip_html_test")
 
     def compare_code(self, expect: str, answer: str) -> None:
         if expect != answer:
@@ -236,33 +237,31 @@ class TestCodeRecognizer(unittest.TestCase):
     def test_inline_code_output(self):
         chain = ExtractSimpleFactory.create(self.chain_config)
         self.assertIsNotNone(chain)
-        raw_html = core_path.joinpath('assets/cccode/mathworks.html').read_text()
+        raw_html = core_path.joinpath("assets/cccode/mathworks.html").read_text()
         input_data = DataJson(
             {
-                'track_id': 'f7b3b1b4-0b1b',
-                'dataset_name': 'news',
-                'url': 'https://ww2.mathworks.cn/help/fixedpoint/ug/single-precision-conversion-verification-best-practices.html',
-                'data_source_category': 'HTML',
-                'html': raw_html,
-                'file_bytes': 1000,
-                'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
+                "track_id": "f7b3b1b4-0b1b",
+                "dataset_name": "news",
+                "url": "https://ww2.mathworks.cn/help/fixedpoint/ug/single-precision-conversion-verification-best-practices.html",
+                "data_source_category": "HTML",
+                "html": raw_html,
+                "file_bytes": 1000,
+                "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
             }
         )
 
         resp = chain.extract(input_data)
-        answer = resp.get_content_list().to_mm_md().strip('\n')
-        expect = core_path.joinpath('assets/cccode/mathworks.md').read_text().strip('\n')
+        answer = resp.get_content_list().to_mm_md().strip("\n")
+        expect = core_path.joinpath("assets/cccode/mathworks.md").read_text().strip("\n")
         self.assertEqual(expect, answer)
-        answer = resp.get_content_list().to_txt().strip('\n')
-        expect = (
-            core_path.joinpath('assets/cccode/mathworks.txt').read_text().strip('\n')
-        )
+        answer = resp.get_content_list().to_txt().strip("\n")
+        expect = core_path.joinpath("assets/cccode/mathworks.txt").read_text().strip("\n")
         self.assertEqual(expect, answer)
 
     def test_code_rec(self):
         for test_case in TEST_CASES:
-            raw_html_path = core_path.joinpath(test_case['input'][0])
-            base_url = test_case['input'][1]
+            raw_html_path = core_path.joinpath(test_case["input"][0])
+            base_url = test_case["input"][1]
             print(base_url)
             raw_html = raw_html_path.read_text()
             parts = self.rec.recognize(base_url, [(html_to_element(raw_html), html_to_element(raw_html))], raw_html)
@@ -280,43 +279,41 @@ class TestCodeRecognizer(unittest.TestCase):
             answers = []
             for part in parts:
                 part_el = part[0]
-                cccodes = part_el.xpath(f'.//{CCTag.CC_CODE}') + part_el.xpath(
-                    f'.//{CCTag.CC_CODE_INLINE}'
-                )
+                cccodes = part_el.xpath(f".//{CCTag.CC_CODE}") + part_el.xpath(f".//{CCTag.CC_CODE_INLINE}")
                 # self.assertEqual(len(cccodes), 1)
                 for part_el in cccodes:
-                    inline = part_el.get('inline', 'false') == 'true'
-                    answer = get_element_text(part_el).strip('\n')
+                    inline = part_el.get("inline", "false") == "true"
+                    answer = get_element_text(part_el).strip("\n")
                     if not answer:
                         continue
                     answers.append((answer, inline))
-            self.assertEqual(len(answers), len(test_case['expected']))
-            for expect_path, (answer, inline) in zip(test_case['expected'], answers):
-                if expect_path.startswith('assets'):
-                    expect = core_path.joinpath(expect_path).read_text().strip('\n')
+            self.assertEqual(len(answers), len(test_case["expected"]))
+            for expect_path, (answer, inline) in zip(test_case["expected"], answers):
+                if expect_path.startswith("assets"):
+                    expect = core_path.joinpath(expect_path).read_text().strip("\n")
                     self.assertTrue(not inline)
                 else:
                     expect = expect_path
                     # 并非所有 inline code 都可以识别出来
                     # self.assertTrue(inline)
                     if not inline:
-                        print(f'{expect} is not identified as inline code')
+                        print(f"{expect} is not identified as inline code")
                 # print(expect, answer)
                 self.compare_code(expect, answer)
 
     def test_inclusion(self):
         chain = ExtractSimpleFactory.create(self.chain_config)
         self.assertIsNotNone(chain)
-        raw_html = core_path.joinpath('assets/cccode/telerik-case-2.html').read_text()
+        raw_html = core_path.joinpath("assets/cccode/telerik-case-2.html").read_text()
         input_data = DataJson(
             {
-                'track_id': 'f7b3b1b4-0b1b',
-                'dataset_name': 'news',
-                'url': 'https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected',
-                'data_source_category': 'HTML',
-                'html': raw_html,
-                'file_bytes': 1000,
-                'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
+                "track_id": "f7b3b1b4-0b1b",
+                "dataset_name": "news",
+                "url": "https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected",
+                "data_source_category": "HTML",
+                "html": raw_html,
+                "file_bytes": 1000,
+                "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
             }
         )
 
@@ -325,7 +322,7 @@ class TestCodeRecognizer(unittest.TestCase):
         count = 0
         for page in answer:
             for item in page:
-                if item['type'] == 'code':
+                if item["type"] == "code":
                     count += 1
         self.assertEqual(count, 2)
 
@@ -339,13 +336,13 @@ class TestCodeRecognizer(unittest.TestCase):
         self.assertIsNotNone(chain)
         input_data = DataJson(
             {
-                'track_id': 'f7b3b1b4-0b1b',
-                'dataset_name': 'news',
-                'url': 'https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected',
-                'data_source_category': 'HTML',
-                'html': html,
-                'file_bytes': 1000,
-                'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
+                "track_id": "f7b3b1b4-0b1b",
+                "dataset_name": "news",
+                "url": "https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected",
+                "data_source_category": "HTML",
+                "html": html,
+                "file_bytes": 1000,
+                "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
             }
         )
 
@@ -388,20 +385,22 @@ class TestCodeRecognizer(unittest.TestCase):
         self.assertIsNotNone(chain)
         input_data = DataJson(
             {
-                'track_id': 'f7b3b1b4-0b1b',
-                'dataset_name': 'news',
-                'url': 'https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected',
-                'data_source_category': 'HTML',
-                'html': html,
-                'file_bytes': 1000,
-                'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
+                "track_id": "f7b3b1b4-0b1b",
+                "dataset_name": "news",
+                "url": "https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected",
+                "data_source_category": "HTML",
+                "html": html,
+                "file_bytes": 1000,
+                "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
             }
         )
 
         resp = chain.extract(input_data)
         answer = resp.get_content_list().to_mm_md()
 
-        self.assertEqual(answer, """```
+        self.assertEqual(
+            answer,
+            """```
 {
    "type": "ZOO",
    "description": "A zoo of Australian animals.",
@@ -417,7 +416,8 @@ class TestCodeRecognizer(unittest.TestCase):
    }
 }
 ```
-""")
+""",
+        )
 
     def test_lineno_2(self):
         html = """
@@ -439,20 +439,22 @@ class TestCodeRecognizer(unittest.TestCase):
         self.assertIsNotNone(chain)
         input_data = DataJson(
             {
-                'track_id': 'f7b3b1b4-0b1b',
-                'dataset_name': 'news',
-                'url': 'https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected',
-                'data_source_category': 'HTML',
-                'html': html,
-                'file_bytes': 1000,
-                'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
+                "track_id": "f7b3b1b4-0b1b",
+                "dataset_name": "news",
+                "url": "https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected",
+                "data_source_category": "HTML",
+                "html": html,
+                "file_bytes": 1000,
+                "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
             }
         )
 
         resp = chain.extract(input_data)
         answer = resp.get_content_list().to_mm_md()
 
-        self.assertEqual(answer, """```
+        self.assertEqual(
+            answer,
+            """```
 package com.servlet;
 
 import java.io.IOException;
@@ -465,7 +467,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.dao.UsersDao;
 ```
-""")
+""",
+        )
 
     def test_lineno_3(self):
         html = """<div>
@@ -500,20 +503,22 @@ import com.dao.UsersDao;
         self.assertIsNotNone(chain)
         input_data = DataJson(
             {
-                'track_id': 'f7b3b1b4-0b1b',
-                'dataset_name': 'news',
-                'url': 'https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected',
-                'data_source_category': 'HTML',
-                'html': html,
-                'file_bytes': 1000,
-                'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
+                "track_id": "f7b3b1b4-0b1b",
+                "dataset_name": "news",
+                "url": "https://www.telerik.com/forums/set-style-of-root-radmenuitem-when-child-item-is-selected",
+                "data_source_category": "HTML",
+                "html": html,
+                "file_bytes": 1000,
+                "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
             }
         )
 
         resp = chain.extract(input_data)
         answer = resp.get_content_list().to_mm_md()
 
-        self.assertEqual(answer, """```
+        self.assertEqual(
+            answer,
+            """```
 package com.servlet;
 
 import java.io.IOException;
@@ -526,7 +531,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.dao.UsersDao;
 ```
-""")
+""",
+        )
 
     def test_lineno_4(self):
         """行内代码尝试寻找行号删除导致代码节点顺序发生变化。 原代码路径为：/div[2]/code, /div[3]/code
@@ -551,64 +557,66 @@ import com.dao.UsersDao;
 </div>
 """
         # 无须检查内容，只要不爆错就可以了
-        _ = self.rec.recognize('', [(html_to_element(html), html_to_element(html))], html)
+        _ = self.rec.recognize("", [(html_to_element(html), html_to_element(html))], html)
 
     def test_url_rules(self):
         chain = ExtractSimpleFactory.create(self.chain_config)
         self.assertIsNotNone(chain)
 
-        raw_html = core_path.joinpath('assets/cccode/android-googlesource.html').read_text()
-        answer = core_path.joinpath('assets/cccode/android-googlesource-0.kt').read_text()
+        raw_html = core_path.joinpath("assets/cccode/android-googlesource.html").read_text()
+        answer = core_path.joinpath("assets/cccode/android-googlesource-0.kt").read_text()
 
-        dj = DataJson({
-            'track_id': 'f7b3b1b4-0b1b',
-            'dataset_name': 'news',
-            'url': 'https://android.googlesource.com/platform/frameworks/support/+/4431302d43ed58e0ac918aa141a3a88768684272/camera/integration-tests/timingtestapp/src/main/java/androidx/camera/integration/antelope/cameracontrollers/CameraXDeviceStateCallback.kt',
-            'data_source_category': 'HTML',
-            'html': raw_html,
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-        })
+        dj = DataJson(
+            {
+                "track_id": "f7b3b1b4-0b1b",
+                "dataset_name": "news",
+                "url": "https://android.googlesource.com/platform/frameworks/support/+/4431302d43ed58e0ac918aa141a3a88768684272/camera/integration-tests/timingtestapp/src/main/java/androidx/camera/integration/antelope/cameracontrollers/CameraXDeviceStateCallback.kt",
+                "data_source_category": "HTML",
+                "html": raw_html,
+                "file_bytes": 1000,
+                "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            }
+        )
 
         resp = chain.extract(dj)
         self.assertEqual(resp.get_content_list().length(), 1)
         self.assertEqual(len(resp.get_content_list()[0]), 1)
-        self.assertEqual(resp.get_content_list()[0][0]['content']['code_content'], answer)
+        self.assertEqual(resp.get_content_list()[0][0]["content"]["code_content"], answer)
 
-        html = '''<html>
+        html = """<html>
     <body>
         <div><span>and you're interested only in <p class="code-style">foo.bar.x</p> and <p class="code-style">foo.bar.z</p> (non-existent):</span></div>
     </body>
 </html>
-'''
+"""
         eles = self.rec.recognize(
-            'http://www.test-inline-code-rules.com',
-            [
-                (html_to_element(html), html_to_element(html))
-            ],
+            "http://www.test-inline-code-rules.com",
+            [(html_to_element(html), html_to_element(html))],
             html,
         )
 
         self.assertEqual(len(eles), 1)
-        inline_codes = eles[0][0].xpath(f'.//{CCTag.CC_CODE_INLINE}')
+        inline_codes = eles[0][0].xpath(f".//{CCTag.CC_CODE_INLINE}")
         self.assertEqual(len(inline_codes), 2)
-        self.assertEqual(inline_codes[0].text, 'foo.bar.x')
-        self.assertEqual(inline_codes[1].text, 'foo.bar.z')
+        self.assertEqual(inline_codes[0].text, "foo.bar.x")
+        self.assertEqual(inline_codes[1].text, "foo.bar.z")
 
-        raw_html = core_path.joinpath('assets/cccode/go-googlesource.html').read_text()
-        answer = core_path.joinpath('assets/cccode/go-googlesource-0.go').read_text()
+        raw_html = core_path.joinpath("assets/cccode/go-googlesource.html").read_text()
+        answer = core_path.joinpath("assets/cccode/go-googlesource-0.go").read_text()
 
-        dj = DataJson({
-            'track_id': 'f7b3b1b4-0b1b',
-            'dataset_name': 'news',
-            'url': 'https://go.googlesource.com/go/+blame/refs/tags/go1.12.4/test/fixedbugs/issue13319.go',
-            'data_source_category': 'HTML',
-            'html': raw_html,
-            'file_bytes': 1000,
-            'meta_info': {'input_datetime': '2020-01-01 00:00:00'},
-        })
+        dj = DataJson(
+            {
+                "track_id": "f7b3b1b4-0b1b",
+                "dataset_name": "news",
+                "url": "https://go.googlesource.com/go/+blame/refs/tags/go1.12.4/test/fixedbugs/issue13319.go",
+                "data_source_category": "HTML",
+                "html": raw_html,
+                "file_bytes": 1000,
+                "meta_info": {"input_datetime": "2020-01-01 00:00:00"},
+            }
+        )
 
         resp = chain.extract(dj)
         self.assertEqual(resp.get_content_list().length(), 1)
         self.assertEqual(len(resp.get_content_list()[0]), 1)
-        self.assertEqual(resp.get_content_list()[0][0]['content']['code_content'], answer)
+        self.assertEqual(resp.get_content_list()[0][0]["content"]["code_content"], answer)

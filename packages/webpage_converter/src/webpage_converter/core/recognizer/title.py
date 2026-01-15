@@ -1,11 +1,10 @@
-from typing import List, Tuple
-
 # from lxml.etree import _Element as HtmlElement
 from lxml import html as lxml_html
 from lxml.html import HtmlElement
 from overrides import override
-from webpage_converter.exception.exception import HtmlTitleRecognizerException
+
 from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer, CCTag
+from webpage_converter.exception.exception import HtmlTitleRecognizerException
 from webpage_converter.schemas.doc_element_type import DocElementType
 from webpage_converter.utils.html_utils import (
     html_normalize_space,
@@ -21,9 +20,7 @@ class TitleRecognizer(BaseHTMLElementRecognizer):
     """解析多级标题元素."""
 
     @override
-    def to_content_list_node(
-        self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str
-    ) -> dict:
+    def to_content_list_node(self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str) -> dict:
         """将html转换成content_list_node.
 
         Args:
@@ -48,10 +45,10 @@ class TitleRecognizer(BaseHTMLElementRecognizer):
     def recognize(
         self,
         base_url: str,
-        main_html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        main_html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
         language: str = "en",
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """父类，解析标题元素.
 
         Args:
@@ -73,9 +70,7 @@ class TitleRecognizer(BaseHTMLElementRecognizer):
                 new_html_lst.extend(lst)
         return new_html_lst
 
-    def _extract_title(
-        self, raw_html: HtmlElement
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    def _extract_title(self, raw_html: HtmlElement) -> list[tuple[HtmlElement, HtmlElement]]:
         """提取多级标题元素
         Args:
             raw_html: HtmlElement对象
@@ -84,9 +79,7 @@ class TitleRecognizer(BaseHTMLElementRecognizer):
             List[Tuple[HtmlElement, HtmlElement]]: 多级标题元素列表
         """
         tree = raw_html
-        self.__do_extract_title(
-            tree
-        )  # 遍历这个tree, 找到所有h1, h2, h3, h4, h5, h6标签
+        self.__do_extract_title(tree)  # 遍历这个tree, 找到所有h1, h2, h3, h4, h5, h6标签
         # 最后切割html
         new_html = tree
         lst = self.html_split_by_tags(new_html, CCTag.CC_TITLE)
@@ -146,9 +139,7 @@ class TitleRecognizer(BaseHTMLElementRecognizer):
         """
         blks = []
 
-        def __extract_title_text_recusive(
-            el: HtmlElement, with_tail: bool = True
-        ) -> list[str]:
+        def __extract_title_text_recusive(el: HtmlElement, with_tail: bool = True) -> list[str]:
             if el.tag == CCTag.CC_CODE_INLINE:
                 blks.append(f"`{el.text}`")
             elif el.tag == CCTag.CC_MATH_INLINE:
@@ -171,11 +162,9 @@ class TitleRecognizer(BaseHTMLElementRecognizer):
 
         for child in header_el.iter():
             __extract_title_text_recusive(child, True)
-        return restore_sub_sup_from_text_regex(
-            " ".join(blk for blk in blks if blk).replace("$br$", PARAGRAPH_SEPARATOR)
-        )
+        return restore_sub_sup_from_text_regex(" ".join(blk for blk in blks if blk).replace("$br$", PARAGRAPH_SEPARATOR))
 
-    def __get_attribute(self, html: HtmlElement) -> Tuple[int, str]:
+    def __get_attribute(self, html: HtmlElement) -> tuple[int, str]:
         """获取element的属性."""
         # ele = self._build_html_tree(html)
         ele = html

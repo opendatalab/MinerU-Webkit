@@ -2,10 +2,11 @@ import copy
 import json
 import re
 import string
-from typing import List, Tuple
+
 from lxml import html
 from lxml.html import HtmlElement
 from overrides import override
+
 from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer, CCTag
 from webpage_converter.schemas.doc_element_type import DocElementType, ParagraphTextType
 from webpage_converter.utils.html_utils import (
@@ -111,9 +112,7 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
     """解析文本段落元素."""
 
     @override
-    def to_content_list_node(
-        self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str
-    ) -> dict:
+    def to_content_list_node(self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str) -> dict:
         """
         把文本段落元素转换为content list node.
         Args:
@@ -137,10 +136,10 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
     def recognize(
         self,
         base_url: str,
-        main_html_lst: List[Tuple[HtmlElement | str, HtmlElement | str]],
+        main_html_lst: list[tuple[HtmlElement | str, HtmlElement | str]],
         raw_html: str,
         language: str = "en",
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """父类，解析文本段落元素.
 
         Args:
@@ -162,9 +161,7 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
                 new_html_lst.extend(new_lst)
         return new_html_lst
 
-    def __to_cctext_lst(
-        self, lst: List[Tuple[HtmlElement | str, HtmlElement | str]], language: str
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    def __to_cctext_lst(self, lst: list[tuple[HtmlElement | str, HtmlElement | str]], language: str) -> list[tuple[HtmlElement, HtmlElement]]:
         """将lst[Element, raw_html] 进行处理. 提出Element里的文字，做成<<cctext>>标签.
 
         Args:
@@ -175,9 +172,7 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
         for el, raw_html in lst:
             # 如果是字符串则转换为 HtmlElement
             el_element = html_to_element(el) if isinstance(el, str) else el
-            raw_html_element = (
-                html_to_element(raw_html) if isinstance(raw_html, str) else raw_html
-            )
+            raw_html_element = html_to_element(raw_html) if isinstance(raw_html, str) else raw_html
 
             para_text = self.__get_paragraph_text(el_element, language)
             if para_text:
@@ -216,9 +211,7 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
 
             # 提取非标签部分并进行替换
             non_tag_part = text[last_pos:start]
-            replaced = rx_entity.sub(
-                lambda m: f"&{entities_map[m.group(0)]};", non_tag_part
-            )
+            replaced = rx_entity.sub(lambda m: f"&{entities_map[m.group(0)]};", non_tag_part)
             result.append(replaced)
 
             # 保留HTML标签不变
@@ -228,9 +221,7 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
 
         # 处理最后剩余的非标签部分
         non_tag_part = text[last_pos:]
-        replaced = rx_entity.sub(
-            lambda m: f"&{entities_map[m.group(0)]};", non_tag_part
-        )
+        replaced = rx_entity.sub(lambda m: f"&{entities_map[m.group(0)]};", non_tag_part)
         result.append(replaced)
 
         return "".join(result)
@@ -257,37 +248,20 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
                 return self.replace_entities(text2.strip(), entities_map)
 
             # 根据text1的最后一个字符和text2的第一个字符判断两个text之间的连接
-            if (
-                (text2 and text2[0] in string.punctuation)
-                or (text2 and text2[0] in special_symbols)
-                or (text2 and text2[0] in other_symbols)
-                or (text1 and text1[-1] in other_symbols)
-            ):
+            if (text2 and text2[0] in string.punctuation) or (text2 and text2[0] in special_symbols) or (text2 and text2[0] in other_symbols) or (text1 and text1[-1] in other_symbols):
                 words_sep = ""
             else:
-                if (
-                    text2.startswith("tem_sub_")
-                    or text2.startswith("tem_sup_")
-                    or text1.endswith("tem_sub_start")
-                    or text1.endswith("tem_sup_start")
-                ):
+                if text2.startswith("tem_sub_") or text2.startswith("tem_sup_") or text1.endswith("tem_sub_start") or text1.endswith("tem_sup_start"):
                     words_sep = ""
                 else:
                     words_sep = " "
             txt = text1 + words_sep + text2
             return self.replace_entities(txt.strip(), entities_map)
 
-    def __get_paragraph_text(
-        self, root: HtmlElement, language: str = "en"
-    ) -> List[dict]:
-        """
-        获取段落全部的文本.
-        对于段落里的行内公式<equation-inline>需要特定处理，转换为段落格式：
-        [
-          {"c":"content text", "t":"text"},
-          {"c": "equation text", "t":"equation"},
-          {"c":"content text", "t":"text"}
-        ]
+    def __get_paragraph_text(self, root: HtmlElement, language: str = "en") -> list[dict]:
+        """获取段落全部的文本. 对于段落里的行内公式<equation-inline>需要特定处理，转换为段落格式： [
+        {"c":"content text", "t":"text"}, {"c": "equation text",
+        "t":"equation"}, {"c":"content text", "t":"text"} ]
 
         Args:
             el: 代表一个段落的html元素
@@ -326,12 +300,7 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
             # 处理尾部文本
             if el.tail and el.tail.strip():
                 _new_tail = html_normalize_space(el.tail.strip())
-                new_tail = (
-                    f" {_new_tail}"
-                    if el.tail.startswith(" ")
-                    and el.tail.strip()[0] in string.punctuation
-                    else _new_tail
-                )
+                new_tail = f" {_new_tail}" if el.tail.startswith(" ") and el.tail.strip()[0] in string.punctuation else _new_tail
                 text = self.__combine_text(text, new_tail, language)
 
             return text
@@ -341,9 +310,7 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
 
         for item in para_text:
             if item["c"] is not None:
-                item["c"] = restore_sub_sup_from_text_regex(item["c"]).replace(
-                    "$br$", "\n"
-                )
+                item["c"] = restore_sub_sup_from_text_regex(item["c"]).replace("$br$", "\n")
             else:
                 item["c"] = ""
 
@@ -366,8 +333,8 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
             return any(is_block_element(child) for child in node.iterchildren())
 
         def clone_structure(
-            path: List[html.HtmlElement],
-        ) -> Tuple[html.HtmlElement, html.HtmlElement]:
+            path: list[html.HtmlElement],
+        ) -> tuple[html.HtmlElement, html.HtmlElement]:
             if not path:
                 raise ValueError("Path cannot be empty")
             root = html.Element(path[0].tag, **path[0].attrib)
@@ -382,7 +349,7 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
 
         paragraphs = []
 
-        def process_node(node: html.HtmlElement, path: List[html.HtmlElement]):
+        def process_node(node: html.HtmlElement, path: list[html.HtmlElement]):
             current_path = path + [node]
             inline_content = []  # 累积内联内容和未包裹文本
 
@@ -437,13 +404,12 @@ class TextParagraphRecognizer(BaseHTMLElementRecognizer):
                 except ValueError:
                     pass
 
-        def merge_inline_content(
-            parent: html.HtmlElement, content_list: List[Tuple[str, str]]
-        ):
+        def merge_inline_content(parent: html.HtmlElement, content_list: list[tuple[str, str]]):
             """将inline_content列表中的内容合并到给定的parent节点中。
 
             :param parent: 目标父节点
-            :param content_list: 包含('direct_text'|'tail_text'|'element', content)元组的列表
+            :param content_list: 包含('direct_text'|'tail_text'|'element',
+                  content)元组的列表
             """
             last_inserted = None
             for item_type, item in content_list:

@@ -1,12 +1,13 @@
 import base64
 import re
-import cairosvg
-from typing import List, Tuple
 from urllib.parse import urljoin, urlparse
+
+import cairosvg
 from lxml.html import HtmlElement
 from overrides import override
-from webpage_converter.exception.exception import HtmlImageRecognizerException
+
 from webpage_converter.core.base_recognizer import BaseHTMLElementRecognizer, CCTag
+from webpage_converter.exception.exception import HtmlImageRecognizerException
 from webpage_converter.schemas.doc_element_type import DocElementType
 from webpage_converter.utils.html_utils import remove_element
 
@@ -27,24 +28,13 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
     ]  # '.pdf'
 
     @override
-    def to_content_list_node(
-        self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str
-    ) -> dict:
-        """将content转换成content_list_node.
-        每种类型的html元素都有自己的content-list格式：参考 docs/specification/output_format/content_list_spec.md
-        例如代码的返回格式：
-        ```json
-        {
-            "type": "code",
-            "bbox": [0, 0, 50, 50],
-            "raw_content": "<code>def add(a, b):\n    return a + b</code>" // 原始的html代码
-            "content": {
-                  "code_content": "def add(a, b):\n    return a + b",
-                  "language": "python",
-                  "by": "hilightjs"
-            }
-        }
-        ```
+    def to_content_list_node(self, base_url: str, parsed_content: HtmlElement, raw_html_segment: str) -> dict:
+        """将content转换成content_list_node. 每种类型的html元素都有自己的content-list格式：参考
+        docs/specification/output_format/content_list_spec.md 例如代码的返回格式：
+        ```json { "type": "code", "bbox": [0, 0, 50, 50], "raw_content":
+        "<code>def add(a, b):\n    return a + b</code>" // 原始的html代码 "content":
+        { "code_content": "def add(a, b):\n    return a + b", "language":
+        "python", "by": "hilightjs" } } ```
 
         Args:
             base_url: str: 基础url
@@ -60,13 +50,9 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
         if html_obj.tag == CCTag.CC_IMAGE:
             return self.__ccimg_to_content_list(raw_html_segment, html_obj)
         else:
-            raise HtmlImageRecognizerException(
-                f"No ccimage element found in content: {parsed_content}"
-            )
+            raise HtmlImageRecognizerException(f"No ccimage element found in content: {parsed_content}")
 
-    def __ccimg_to_content_list(
-        self, raw_html_segment: str, html_obj: HtmlElement
-    ) -> dict:
+    def __ccimg_to_content_list(self, raw_html_segment: str, html_obj: HtmlElement) -> dict:
         caption = html_obj.get("caption")
         footnote = html_obj.get("footnote")
         result = {
@@ -87,10 +73,10 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
     def recognize(
         self,
         base_url: str,
-        main_html_lst: List[Tuple[HtmlElement, HtmlElement]],
+        main_html_lst: list[tuple[HtmlElement, HtmlElement]],
         raw_html: str,
         language: str = "en",
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    ) -> list[tuple[HtmlElement, HtmlElement]]:
         """父类，解析图片元素.
 
         Args:
@@ -112,9 +98,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
                     ccimg_html.append(html_li)
         return ccimg_html
 
-    def __parse_html_img(
-        self, base_url: str, html_str: Tuple[HtmlElement, HtmlElement]
-    ) -> List[Tuple[HtmlElement, HtmlElement]]:
+    def __parse_html_img(self, base_url: str, html_str: tuple[HtmlElement, HtmlElement]) -> list[tuple[HtmlElement, HtmlElement]]:
         """解析html，获取img标签."""
         # html_obj = self._build_html_tree(html_str[0])
         html_obj = html_str[0]
@@ -145,9 +129,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
         if base_img:
             img_elements.extend(base_img)
         if img_elements:
-            update_html, img_tag = self.__parse_img_elements(
-                base_url, img_elements, html_obj
-            )
+            update_html, img_tag = self.__parse_img_elements(base_url, img_elements, html_obj)
             if img_tag:
                 return self.html_split_by_tags(update_html, CCTag.CC_IMAGE)
 
@@ -172,9 +154,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
 
         return False
 
-    def __parse_img_elements(
-        self, base_url: str, img_elements: HtmlElement, html_obj: HtmlElement
-    ) -> HtmlElement:
+    def __parse_img_elements(self, base_url: str, img_elements: HtmlElement, html_obj: HtmlElement) -> HtmlElement:
         """解析img标签."""
         img_tag = []
         is_valid_img = False
@@ -188,42 +168,30 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
             }
             attributes["caption"] = elem.xpath("normalize-space()")
             if tag in ["embed", "object", "iframe", "video", "audio", "canvas"]:
-                if not [
-                    img_elem
-                    for img_elem in self.IMG_LABEL
-                    if img_elem in raw_img_html.lower()
-                ]:
+                if not [img_elem for img_elem in self.IMG_LABEL if img_elem in raw_img_html.lower()]:
                     continue
                 elif elem.xpath(".//img|.//image"):
                     if len(elem.xpath(".//img|.//image")) == 1:
-                        self.__parse_img_attr(
-                            base_url, elem.xpath(".//img|.//image")[0], attributes
-                        )
+                        self.__parse_img_attr(base_url, elem.xpath(".//img|.//image")[0], attributes)
                     else:
                         continue
                 else:
                     self.__parse_img_attr(base_url, elem, attributes)
             elif tag in ["picture", "figure"]:
                 if elem.xpath(".//img|.//image"):
-                    self.__parse_img_attr(
-                        base_url, elem.xpath(".//img|.//image")[0], attributes
-                    )
+                    self.__parse_img_attr(base_url, elem.xpath(".//img|.//image")[0], attributes)
                 else:
                     continue
             elif tag == "svg":
                 if elem.xpath(".//path|.//circle"):
                     self.__parse_svg_img_attr(elem, attributes)
                 elif elem.xpath(".//img|.//image"):
-                    self.__parse_img_attr(
-                        base_url, elem.xpath(".//img|.//image")[0], attributes
-                    )
+                    self.__parse_img_attr(base_url, elem.xpath(".//img|.//image")[0], attributes)
                 else:
                     continue
             elif tag == "article":
                 if elem.xpath(".//header"):
-                    self.__parse_img_attr(
-                        base_url, elem.xpath(".//header")[0], attributes
-                    )
+                    self.__parse_img_attr(base_url, elem.xpath(".//header")[0], attributes)
                 else:
                     continue
             else:
@@ -242,9 +210,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
             else:
                 img_tag.append(CCTag.CC_IMAGE)
                 img_text, img_tail = self.__parse_text_tail(attributes)
-                new_ccimage = self._build_cc_element(
-                    CCTag.CC_IMAGE, img_text, img_tail, **attributes
-                )
+                new_ccimage = self._build_cc_element(CCTag.CC_IMAGE, img_text, img_tail, **attributes)
                 self._replace_element(elem, new_ccimage)
 
         if is_valid_img:
@@ -274,13 +240,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
             "height",
             "style",
         ]  # , 'src', 'style', 'data-src', 'srcset'
-        attributes.update(
-            {
-                attr: elem_attributes.get(attr)
-                for attr in common_attributes
-                if elem_attributes.get(attr)
-            }
-        )
+        attributes.update({attr: elem_attributes.get(attr) for attr in common_attributes if elem_attributes.get(attr)})
         if elem.tail and elem.tail.strip():
             attributes["tail"] = elem.tail.strip()
 
@@ -293,11 +253,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
             try:
                 url_part = style.partition("background-image:")[2]  # 获取 url(...) 部分
                 bg_url = url_part.partition("url(")[2].split(")")[0].strip(" '\"")
-                if any(
-                    img_label
-                    for img_label in self.IMG_LABEL
-                    if img_label in bg_url.lower()
-                ):
+                if any(img_label for img_label in self.IMG_LABEL if img_label in bg_url.lower()):
                     return bg_url
             except HtmlImageRecognizerException:
                 pass
@@ -337,7 +293,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
                 if elem.get(attr) is not None:
                     attributes[attr] = elem.get(attr)
 
-    def __parse_text_tail(self, attributes: dict) -> Tuple[str, str]:
+    def __parse_text_tail(self, attributes: dict) -> tuple[str, str]:
         """解析img标签的text&tail值."""
         text = attributes.pop("text") if attributes.get("text") else ""
         tail = attributes.pop("tail") if attributes.get("tail") else ""
@@ -359,9 +315,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
     def __svg_to_base64(self, svg_content: str) -> str:
         try:
             if not svg_content.strip().endswith("svg>"):
-                svg_content = re.search(r"(<svg.*svg>)", svg_content, re.DOTALL).group(
-                    1
-                )
+                svg_content = re.search(r"(<svg.*svg>)", svg_content, re.DOTALL).group(1)
             image_data = cairosvg.svg2png(bytestring=svg_content)
             base64_data = base64.b64encode(image_data).decode("utf-8")
             mime_type = "image/png"
@@ -369,11 +323,7 @@ class ImageRecognizer(BaseHTMLElementRecognizer):
         except ValueError:
             pass
         except Exception as e:
-            if "not well-formed (invalid token)" in str(
-                e
-            ):  # 原svg数据异常，这里过滤掉不做处理
+            if "not well-formed (invalid token)" in str(e):  # 原svg数据异常，这里过滤掉不做处理
                 pass
             else:
-                HtmlImageRecognizerException(
-                    f"parse svg error: {e}, svg data: {svg_content}"
-                )
+                HtmlImageRecognizerException(f"parse svg error: {e}, svg data: {svg_content}")
