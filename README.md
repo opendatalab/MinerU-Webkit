@@ -67,6 +67,13 @@ print(result)
 | `output_format`     | str  | mm_md               | Conversion format, supports mm_md (markdown), md (markdown with images), json, txt |
 | `use_raw_image_url` | bool | True                | Whether to use the original image URL (only valid for mm_md format)                |
 
+### Optional values for `output_format`
+
+- `mm_md`: The output format is markdown
+- `md`:    The output format is Markdown with images
+- `json`:  The output format is json
+- `txt`:   The output format is txt
+
 # TODO
 
 # contributors
