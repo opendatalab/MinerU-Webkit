@@ -264,6 +264,8 @@ class TableRecognizer(BaseHTMLElementRecognizer):
             def process_node(node):
                 """处理行内公式、行间公式、行间代码、行内代码."""
                 if node.tag == CCTag.CC_MATH_INLINE:
+                    if result and "\n" in result[-1]:  # 行内公式前去掉换行
+                        del result[-1]
                     if node.text and node.text.strip():
                         result.append(f"${node.text.strip()}$")
                     if node.tail and node.tail.strip():
@@ -294,8 +296,8 @@ class TableRecognizer(BaseHTMLElementRecognizer):
                     if node.tail and node.tail.strip():
                         result.append(node.tail.strip())
                 else:
-                    pre_element = node.getprevious()
-                    if node.tag == "br" or node.tag not in new_inline_tags or (pre_element is not None and pre_element.tag not in new_inline_tags):
+                    parent_element = node.getparent()
+                    if node.tag == "br" or node.tag not in new_inline_tags:
                         result.append("\n\n")
 
                     # 提取当前节点的文本
@@ -306,9 +308,14 @@ class TableRecognizer(BaseHTMLElementRecognizer):
                     # 递归处理子节点
                     for child in node:
                         process_node(child)
+
+                    # 父节点仅有自己一个元素，且父节点是块级元素（不包含行内公式）
+                    if parent_element is not None and len(parent_element) == 1 and parent_element.tag not in new_inline_tags and not parent_element.xpath(".//ccmath-inline"):
+                        result.append("\n\n")
+
                     # 处理节点的tail（元素闭合后的文本）
                     if node.tail and node.tail.strip():
-                        if node.tag not in new_inline_tags:
+                        if node.tag not in new_inline_tags and (result and re.match(r"^\$.*?\$$", result[-1]) is None):
                             result.append("\n\n")
                         cleaned_tail = node.tail.strip()
                         result.append(html_normalize_space(cleaned_tail))

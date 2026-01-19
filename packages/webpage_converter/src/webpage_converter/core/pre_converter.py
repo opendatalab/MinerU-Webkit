@@ -124,9 +124,6 @@ class TestHTMLFileToDataJsonPreConverter(HTMLFileFormatFilterPreConverter):
     def _do_pre_convert(self, data_json: DataJson) -> DataJson:
         """对输入的html和main_html拼装到DataJson中，形成标准输入格式."""
         proj_root_dir = get_proj_root_dir()
-        print(f"proj_root_dir:{proj_root_dir}")
-        print(f"self.__html_parent_path:{self.__html_parent_path}")
-        print(f"path:{data_json.get('path')}")
         html = data_json.get("html")
         main_html = data_json.get("main_html")
         if not html and not main_html:

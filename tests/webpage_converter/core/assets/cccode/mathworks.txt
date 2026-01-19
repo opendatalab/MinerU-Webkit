@@ -27,7 +27,6 @@ Single-Precision Conversion Best Practices
   - 关联许可证
   - 登出
 帮助中心
-目录
 - 文档主页
 - 代码生成
 - FPGA、ASIC 和 SoC 开发
@@ -109,9 +108,6 @@ scfg.TestBenchName = 'mytest';
 scfg.TestNumerics = true;
 scfg.LogIOForComparisonPlotting = true;
 ```
-MATLAB Command
-You clicked a link that corresponds to this MATLAB command:
-Run the command by entering it in the MATLAB Command Window. Web browsers do not support MATLAB commands.
 选择网站
 选择网站以获取翻译的可用内容，以及查看当地活动和优惠。根据您的位置，我们建议您选择：。
 您也可以从以下列表中选择网站：

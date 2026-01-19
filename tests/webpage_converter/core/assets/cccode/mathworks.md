@@ -35,8 +35,6 @@ Single-Precision Conversion Best Practices
 
 帮助中心
 
-目录
-
 - 文档主页
 
 - 代码生成
@@ -148,12 +146,6 @@ scfg.TestBenchName = 'mytest';
 scfg.TestNumerics = true;
 scfg.LogIOForComparisonPlotting = true;
 ```
-
-## MATLAB Command
-
-You clicked a link that corresponds to this MATLAB command:
-
-Run the command by entering it in the MATLAB Command Window. Web browsers do not support MATLAB commands.
 
 ![MathWorks - Domain Selector](6f2ec84d60ec7db01eb0b0cef605f15473eadf7636facb41f467aa882ee6c833)
 

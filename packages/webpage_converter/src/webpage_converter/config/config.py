@@ -6,6 +6,7 @@ INVISIBLE_TAGS = [
     },
     {"url": "*", "tag": '//div[contains(@style, "display: none")]'},
     {"url": "*", "tag": '//div[contains(@style, "display:none")]'},
+    {"url": "*", "tag": '//*[@aria-hidden and not(@aria-hidden="false")]'},
     {"url": "*", "tag": '//*[@hidden and not(@hidden="false")]'},
     {
         "url": "stackexchange.com",
