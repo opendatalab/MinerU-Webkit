@@ -5,22 +5,26 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "webpage-extractor",
     "webpage_converter",
 ]
 
 [tool.uv.workspace]
 members = [
-    "packages/webpage_converter",
     "packages/mcp_server",
+    "packages/webpage_converter",
+    "packages/webpage_extractor",
 ]
 
 [tool.uv.sources]
 webpage_converter = { workspace = true }
+webpage-extractor = { workspace = true }
 
 [[tool.uv.index]]
 name = "tuna"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 
+# ########### ruff配置 ################
 [tool.ruff]
 # 最大行长度
 line-length = 320
