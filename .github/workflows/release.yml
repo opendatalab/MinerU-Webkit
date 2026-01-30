@@ -72,8 +72,6 @@ jobs:
       - name: Build wheel
         run: |
           uv build
-          mv dist/*.whl ../../
-          mv dist/*.tar.gz ../../
 
       - name: Get Version
         id: get_version
@@ -88,6 +86,6 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
-            *.whl
-            *.tar.gz
+            ./dist/*.whl
+            ./dist/*.tar.gz
           token: ${{ secrets.RELEASE_TOKEN }}
