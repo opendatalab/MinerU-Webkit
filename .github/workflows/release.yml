@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: master
+          ref: main
           fetch-depth: 0
 
       - name: Set up Python
@@ -50,7 +50,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          ref: master
+          ref: main
           fetch-depth: 0
 
       - name: Set up Python
