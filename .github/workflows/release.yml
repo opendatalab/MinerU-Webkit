@@ -1,0 +1,87 @@
+name: Publish Python Package
+
+on:
+  push:
+    tags:
+      - '*released'
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install uv and bump-my-version
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          uv tool install bump-my-version
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Update Version and Commit
+        id: bump
+        run: |
+          bump-my-version bump ${{ github.event.inputs.bump-type }} --commit --tag --message "Bump version: {current_version} → {new_version}"
+        env:
+          GIT_AUTHOR_NAME: "github-actions[bot]"
+          GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+      - name: Push changes
+        run: |
+          git push origin main
+          git push --tags
+
+  build-and-release:
+    needs: bump-version
+    if: always() && (needs.bump-version.result == 'success' || github.event_name == 'push')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Build wheel
+        run: |
+          uv build
+          mv dist/*.whl ../../
+          mv dist/*.tar.gz ../../
+
+      - name: Get Version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: MinerU-Webkit ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            *.whl
+            *.tar.gz
+          token: ${{ secrets.RELEASE_TOKEN }}
