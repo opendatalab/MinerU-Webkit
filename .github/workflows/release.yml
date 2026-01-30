@@ -66,9 +66,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
-          git config --global http.https://github.com/.extraheader "Authorization: Bearer $GITHUB_TOKEN"
-          git push origin main
-          git push --tags
+          git push https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/ccprocessor/MinerU-Webkit.git main
+          git push https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/ccprocessor/MinerU-Webkit.git --tags
 
       - name: Build wheel
         run: |
