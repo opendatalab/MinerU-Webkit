@@ -8,6 +8,9 @@ on:
 jobs:
   bump-version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -63,6 +66,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
+          git config --global http.https://github.com/.extraheader "Authorization: Bearer $GITHUB_TOKEN"
           git push origin main
           git push --tags
 
