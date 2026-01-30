@@ -52,36 +52,17 @@ jobs:
       - name: Update Version and Commit
         id: bump
         run: |
+          git config --global user.name "LollipopsAndWine"
+          git config --global user.email "m15237195947@163.com"
           bump-my-version bump ${{ steps.determine_bump.outputs.bump_type }} --commit --tag --message "Bump version: {current_version} → {new_version}"
         env:
-          GIT_AUTHOR_NAME: "github-actions[bot]"
-          GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
+          GIT_AUTHOR_NAME: "LollipopsAndWine"
+          GIT_AUTHOR_EMAIL: "m15237195947@163.com"
 
       - name: Push changes
         run: |
           git push origin main
           git push --tags
-
-  build-and-release:
-    needs: bump-version
-    if: always() && (needs.bump-version.result == 'success' || github.event_name == 'push')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Build wheel
         run: |
