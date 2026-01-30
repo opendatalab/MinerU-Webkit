@@ -60,6 +60,8 @@ jobs:
           GIT_AUTHOR_EMAIL: "m15237195947@163.com"
 
       - name: Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           git push origin main
           git push --tags
