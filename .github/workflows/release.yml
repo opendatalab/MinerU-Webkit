@@ -6,7 +6,7 @@ on:
       - '*released'
 
 jobs:
-  bump-version:
+  build-and-release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -57,7 +57,7 @@ jobs:
         run: |
           git config --global user.name "LollipopsAndWine"
           git config --global user.email "m15237195947@163.com"
-          bump-my-version bump ${{ steps.determine_bump.outputs.bump_type }} --commit --tag --message "Bump version: {current_version} → {new_version}"
+          bump-my-version bump ${{ steps.determine_bump.outputs.bump_type }} --commit --message "Bump version: {current_version} → {new_version}"
         env:
           GIT_AUTHOR_NAME: "LollipopsAndWine"
           GIT_AUTHOR_EMAIL: "m15237195947@163.com"
@@ -67,7 +67,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           git push https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/ccprocessor/MinerU-Webkit.git main
-          git push https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/ccprocessor/MinerU-Webkit.git --tags
 
       - name: Build wheel
         run: |
