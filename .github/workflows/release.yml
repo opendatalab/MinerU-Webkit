@@ -5,6 +5,15 @@ on:
     tags:
       - '*released'
 
+  workflow_dispatch:
+    inputs:
+      bump-type:
+        description: 'Version Upgrade Type'
+        required: true
+        default: 'patch'
+        type: choice
+        options: [ 'major', 'minor', 'patch' ]
+
 jobs:
   bump-version:
     runs-on: ubuntu-latest
