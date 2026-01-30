@@ -75,7 +75,10 @@ jobs:
 
       - name: Get Version
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        run: |
+          CURRENT_VERSION=$(bump-my-version show current_version)
+          echo "当前版本: $CURRENT_VERSION"
+          echo "VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -88,4 +91,5 @@ jobs:
           files: |
             ./dist/*.whl
             ./dist/*.tar.gz
-          token: ${{ secrets.RELEASE_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
