@@ -38,7 +38,6 @@ all = [
 
 [tool.uv.workspace]
 members = [
-    "packages/mcp_server",
     "packages/webpage_converter",
     "packages/webpage_extractor",
 ]
