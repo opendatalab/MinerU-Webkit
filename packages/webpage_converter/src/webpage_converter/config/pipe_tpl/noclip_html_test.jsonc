@@ -1,0 +1,42 @@
+{
+  "extractor_pipe": {
+    "enable": true,
+    "validate_input_format": false,
+    "pre_extractor": [
+      {
+        "enable": true,
+        "python_class": "webpage_converter.core.pre_converter.TestHTMLFileToDataJsonPreConverter",
+        "class_init_kwargs": {
+          "html_parent_dir": "tests/webpage_converter/core/assets/html/"
+        }
+      },
+      {
+        "enable": true,
+        "python_class": "webpage_converter.core.pre_converter.HTMLFileFormatNoClipPreConverter",
+        "class_init_kwargs": {}
+      },
+      {
+        "enable": true,
+        "python_class": "webpage_converter.core.pre_converter.HTMLFileFormatNoClipFilterTablePreConverter"
+      },
+      {
+        "enable": true,
+        "python_class": "webpage_converter.core.pre_converter.HTMLFileFormatNoClipCleanTagsPreConverter",
+        "class_init_kwargs": {}
+      }
+    ],
+    "extractor": [
+      {
+        "enable": true,
+        "python_class": "webpage_converter.core.converter.NoClipHTMLFIleFormatorConverter",
+        "class_init_kwargs": {}
+      }
+    ],
+    "post_extractor": [
+      {
+        "enable": true,
+        "python_class": "webpage_converter.core.post_converter.ContentListStripSpacePostConverter"
+      }
+    ]
+  }
+}

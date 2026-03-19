@@ -1,0 +1,64 @@
+repos:
+  # 基础钩子
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      # 删除行尾空白
+      - id: trailing-whitespace
+        exclude: '^tests/.*/assets/|\.ipynb$'
+      # 检查 YAML 语法
+      - id: check-yaml
+      # 修复文件末尾换行
+      - id: end-of-file-fixer
+        exclude: '^tests/.*/assets/|\.ipynb$'
+      # 整理 requirements.txt
+      - id: requirements-txt-fixer
+      # 检查合并冲突标记
+      - id: check-merge-conflict
+      # 移除编码声明
+      - id: fix-encoding-pragma
+        args: [ "--remove" ]
+      # 统一行结束符
+      - id: mixed-line-ending
+        args: [ "--fix=lf" ]
+        exclude: '^tests/.*/assets/|\.ipynb$'
+  # 使用 Ruff 替代 flake8 和 isort
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.11
+    hooks:
+      # 代码检查（Linting），并自动修复可修复的问题
+      - id: ruff-check
+        args: [ --fix ]
+        # 排除不需要检查的文件
+        exclude: '^tests/.*/assets/'
+      # 代码格式化
+      - id: ruff-format
+        exclude: '^tests/.*/assets/'
+  # Markdown 格式化工具
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.18
+    hooks:
+      - id: mdformat
+        args: [ "--number", "--table-width", "200" ]
+        additional_dependencies:
+          - mdformat-openmmlab
+          - mdformat_frontmatter
+          - linkify-it-py
+        exclude: '^tests/.*/assets/'
+  # 文档字符串格式化工具
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.7
+    hooks:
+      - id: docformatter
+        additional_dependencies: [ tomli ]
+        args: [ --in-place ]
+        exclude: '^tests/.*/assets/'
+  - repo: local
+    hooks:
+      - id: clear-jupyter-notebook-output
+        name: Clear Jupyter Notebook Output
+        entry: jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace
+        language: system
+        files: \.ipynb$
+        types: [ file ]
+        exclude: '^tests/.*/assets/'

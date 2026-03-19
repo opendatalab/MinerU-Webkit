@@ -1,0 +1,94 @@
+name: Publish Python Package
+
+on:
+  push:
+    tags:
+      - '*released'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install uv and bump-my-version
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          uv tool install bump-my-version
+
+      - name: Get bump_type
+        id: determine_bump
+        run: |
+          CURRENT_VERSION=$(bump-my-version show current_version)
+          echo "当前版本: $CURRENT_VERSION"
+
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          PATCH=$(echo $CURRENT_VERSION | cut -d. -f3)
+
+          echo "主版本号: $MAJOR, 次版本号: $MINOR, 修订号: $PATCH"
+
+          if [ "$PATCH" -eq 9 ]; then
+            echo "修订号为9，触发次版本号升级"
+            echo "bump_type=minor" >> $GITHUB_OUTPUT
+          elif [ "$MINOR" -eq 9 ]; then
+            echo "次版本号为9，触发主版本号升级"
+            echo "bump_type=major" >> $GITHUB_OUTPUT
+          else
+            echo "默认触发修订号升级"
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update Version and Commit
+        id: bump
+        run: |
+          git config --global user.name "LollipopsAndWine"
+          git config --global user.email "m15237195947@163.com"
+          bump-my-version bump ${{ steps.determine_bump.outputs.bump_type }} --commit --message "Bump version: {current_version} → {new_version}"
+        env:
+          GIT_AUTHOR_NAME: "LollipopsAndWine"
+          GIT_AUTHOR_EMAIL: "m15237195947@163.com"
+
+      - name: Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          git push https://x-access-token:${{ secrets.RELEASE_TOKEN }}@github.com/ccprocessor/MinerU-Webkit.git main
+
+      - name: Build wheel
+        run: |
+          uv build
+
+      - name: Get Version
+        id: get_version
+        run: |
+          CURRENT_VERSION=$(bump-my-version show current_version)
+          echo "当前版本: $CURRENT_VERSION"
+          echo "VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: MinerU-Webkit ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            ./dist/*.whl
+            ./dist/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

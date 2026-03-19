@@ -1,0 +1,262 @@
+{
+  // Base基础异常 (10000000)
+  "LlmWebKitBase": {
+    "LlmWebKitBaseException": {
+      "code": 10000000,
+      "message": "LlmWebKit base exception"
+    }
+  },
+
+  // ExtractorChain相关异常 (20000000)
+  "ExtractorChain": {
+    "ExtractorChainBaseException": {
+      "code": 20000000,
+      "message": "ExtractorChain base exception"
+    },
+    "ExtractorChainInitException": {
+      "code": 21000000,
+      "message": "ExtractorChain initialization exception"
+    },
+    "ExtractorChainConfigException": {
+      "code": 22000000,
+      "message": "ExtractorChain configuration exception"
+    },
+    "ExtractorChainInputException": {
+      "code": 23000000,
+      "message": "ExtractorChain input exception"
+    },
+    "ExtractorNotFoundException": {
+      "code": 24000000,
+      "message": "Extractor not found exception"
+    }
+  },
+
+  // Extractor相关异常 (30000000)
+  "Extractor": {
+    "ExtractorBaseException": {
+      "code": 30000000,
+      "message": "Extractor base exception"
+    },
+    "HtmlFileExtractorException": {
+      "code": 31000000,
+      "message": "HTML file extractor exception"
+    },
+    "PdfFileExtractorException": {
+      "code": 32000000,
+      "message": "PDF file extractor exception"
+    },
+    "EbookFileExtractorException": {
+      "code": 33000000,
+      "message": "Ebook file extractor exception"
+    },
+    "OtherFileExtractorException": {
+      "code": 34000000,
+      "message": "Other file extractor exception"
+    },
+    "MagicHtmlExtractorException": {
+      "code": 31010000,
+      "message": "Magic HTML extractor exception"
+    },
+    "HtmlPreExtractorException": {
+      "code": 31020000,
+      "message": "HTML pre-extractor exception"
+    },
+    "HtmlExtractorException": {
+      "code": 31030000,
+      "message": "HTML extractor exception"
+    },
+    "HtmlPostExtractorException": {
+      "code": 31040000,
+      "message": "HTML post-extractor exception"
+    }
+  },
+  // HtmlRecognizer相关异常
+  "HtmlRecognizer": {
+    "HtmlRecognizerException": {
+      "code": 31031000,
+      "message": "HTML recognizer exception"
+    },
+    "HtmlMathRecognizerException": {
+      "code": 31031100,
+      "message": "HTML math recognizer exception"
+    },
+    "HtmlMathMathjaxRenderRecognizerException": {
+      "code": 31031110,
+      "message": "HTML math mathjax render recognizer exception"
+    },
+    "HtmlCodeRecognizerException": {
+      "code": 31031200,
+      "message": "HTML code recognizer exception"
+    },
+    "HtmlTableRecognizerException": {
+      "code": 31031300,
+      "message": "HTML table recognizer exception"
+    },
+    "HtmlImageRecognizerException": {
+      "code": 31031400,
+      "message": "HTML image recognizer exception"
+    },
+    "HtmlListRecognizerException": {
+      "code": 31031500,
+      "message": "HTML list recognizer exception"
+    },
+    "HtmlAudioRecognizerException": {
+      "code": 31031600,
+      "message": "HTML audio recognizer exception"
+    },
+    "HtmlVideoRecognizerException": {
+      "code": 31031700,
+      "message": "HTML video recognizer exception"
+    },
+    "HtmlTitleRecognizerException": {
+      "code": 31031800,
+      "message": "HTML title recognizer exception"
+    },
+    "HtmlTextRecognizerException": {
+      "code": 31031900,
+      "message": "HTML text recognizer exception"
+    }
+  },
+  // Model相关异常 (40000000)
+  "Model": {
+    "ModelBaseException": {
+      "code": 40000000,
+      "message": "Model base exception"
+    },
+    "ModelResourceException": {
+      "code": 41000000,
+      "message": "Model resource exception"
+    },
+    "ModelInitException": {
+      "code": 42000000,
+      "message": "Model initialization exception"
+    },
+    "ModelInputException": {
+      "code": 43000000,
+      "message": "Model input exception"
+    },
+    "ModelOutputException": {
+      "code": 44000000,
+      "message": "Model output exception"
+    },
+    "SafeModelException": {
+      "code": 45000000,
+      "message": "Safe model exception"
+    },
+    "CleanModelException": {
+      "code": 46000000,
+      "message": "Clean model exception"
+    },
+    "CleanModelUnsupportedLanguageException": {
+      "code": 46100000,
+      "message": "Clean model unsupported language exception"
+    },
+    "ModelRuntimeException": {
+      "code": 47000000,
+      "message": "Model runtime exception"
+    }
+  },
+  // ProcessorChain相关异常 (50000000)
+  "ProcessorChain": {
+    "ProcessorChainBaseException": {
+      "code": 50000000,
+      "message": "ProcessorChain base exception"
+    },
+    "ProcessorChainInitException": {
+      "code": 51000000,
+      "message": "ProcessorChain initialization exception"
+    },
+    "ProcessorChainConfigException": {
+      "code": 52000000,
+      "message": "ProcessorChain configuration exception"
+    },
+    "ProcessorChainInputException": {
+      "code": 53000000,
+      "message": "ProcessorChain input exception"
+    },
+    "ProcessorNotFoundException": {
+      "code": 54000000,
+      "message": "Processor not found exception"
+    }
+  },
+  // Processor相关异常 (60000000)
+  "Processor": {
+    "ProcessorBaseException": {
+      "code": 60000000,
+      "message": "Processor base exception"
+    },
+    "HtmlPreProcessorException": {
+      "code": 61000000,
+      "message": "HTML pre-processor exception"
+    },
+    "HtmlProcessorException": {
+      "code": 62000000,
+      "message": "HTML processor exception"
+    },
+    "HtmlPostProcessorException": {
+      "code": 63000000,
+      "message": "HTML post-processor exception"
+    }
+  },
+  // Parser相关异常 (62100000)
+  "Parser": {
+    "DomainClusteringParserException": {
+      "code": 62101000,
+      "message": "Domain clustering parser exception"
+    },
+    "LayoutClusteringParserException": {
+      "code": 62102000,
+      "message": "Layout clustering parser exception"
+    },
+    "TypicalHtmlSelectorParserException": {
+      "code": 62103000,
+      "message": "Typical HTML selector parser exception"
+    },
+    "TagSimplifiedParserException": {
+      "code": 62104000,
+      "message": "Tag simplified parser exception"
+    },
+    "LlmMainIdentifierParserException": {
+      "code": 62105000,
+      "message": "LLM main identifier parser exception"
+    },
+    "TagMappingParserException": {
+      "code": 62106000,
+      "message": "Tag mapping parser exception"
+    },
+    "LayoutSubtreeParserException": {
+      "code": 62107000,
+      "message": "Layout subtree parser exception"
+    },
+    "LayoutBatchParserException": {
+      "code": 62108000,
+      "message": "Layout batch parser exception"
+    },
+    "DomContentFilterParserException": {
+      "code": 62109000,
+      "message": "Dom content filter parser exception"
+    }
+  },
+  // MainHtmlParser相关异常 (70000000)
+  "MainHtmlParser": {
+    "MainHtmlParserBaseException": {
+      "code": 70000000,
+      "message": "MainHtmlParser base exception"
+    }
+  },
+  // SimpleAPI相关异常 (80000000)
+  "SimpleAPI": {
+    "SimpleAPIBaseException": {
+      "code": 80000000,
+      "message": "Simple API base exception"
+    },
+    "InvalidExtractorTypeException": {
+      "code": 81000000,
+      "message": "Invalid extractor type exception"
+    },
+    "InvalidOutputFormatException": {
+      "code": 82000000,
+      "message": "Invalid output format exception"
+    }
+  }
+}
