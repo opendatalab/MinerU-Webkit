@@ -64,13 +64,13 @@ print(result)
 | ------------------- | ---- | ------------------- | ---------------------------------------------------------------------------------- |
 | `main_html`         | str  | **Required**        | HTML that needs to be converted                                                    |
 | `url`               | str  | https://example.com | The URL link for HTML is required in mm_md mode                                    |
-| `output_format`     | str  | mm_md               | Conversion format, supports mm_md (markdown), md (markdown with images), json, txt |
+| `output_format`     | str  | mm_md               | Conversion format, supports mm_md (markdown with images), md (markdown), json, txt |
 | `use_raw_image_url` | bool | True                | Whether to use the original image URL (only valid for mm_md format)                |
 
 ### Optional values for `output_format`
 
-- `mm_md`: The output format is markdown
-- `md`:    The output format is Markdown with images
+- `mm_md`: The output format is markdown with images
+- `md`:    The output format is Markdown
 - `json`:  The output format is json
 - `txt`:   The output format is txt
 
